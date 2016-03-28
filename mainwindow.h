@@ -17,6 +17,12 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    QPoint oldPos;
+    bool press;
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+
 signals:
 
 public slots:

@@ -11,8 +11,8 @@ public:
     ~QGxImage();    
 
 public:
-//    paintEvent(QPaintEvnt *);
-    void paintEvent();
+    void paintEvent(QPaintEvent *);
+//    void paintEvent();
 
 private:
 
