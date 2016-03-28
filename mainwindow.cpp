@@ -16,10 +16,11 @@ MainWindow::MainWindow(QWidget *parent) :
     // 设置窗体背景
     setAutoFillBackground(true);
     QPalette  palette;
-    palette.setColor(QPalette::Background, QColor(153,53,53));
+    //palette.setColor(QPalette::Background, QColor(0x00,0xff,0x00,0x00));
+    palette.setColor(QPalette::Background, QColor(53,73,123));
     setPalette(palette);
 
-    this->setAttribute(Qt::WA_TranslucentBackground, true);
+    //this->setAttribute(Qt::WA_TranslucentBackground, true);
 
     ui->setupUi(this);
 
