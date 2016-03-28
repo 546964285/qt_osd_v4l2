@@ -17,10 +17,10 @@
    <widget class="QGxImage" name="label">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>40</y>
-      <width>400</width>
-      <height>400</height>
+      <x>48</x>
+      <y>48</y>
+      <width>384</width>
+      <height>384</height>
      </rect>
     </property>
     <property name="frameShape">

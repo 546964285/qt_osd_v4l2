@@ -26,11 +26,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label->setText(tr(""));
 
-    ui->label->move(40,40);
+//    ui->label->move(48,48);
     //ui->label->resize(640, 480);
-    ui->label->resize(400, 400);
+    //ui->label->resize(400, 400);
+//    ui->label->resize(384, 384);
 
-    ui->label->setMask(QRect(40,40,400,400));
+//    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
 }
