@@ -29,7 +29,8 @@ class QV4l2
 public:
     QV4l2();
     ~QV4l2();
-    bool open_device(const char *szDevName);
+    //bool open_device(const char *szDevName);
+    bool open_device();
     bool init_device();
     bool init_mmap();
 
@@ -37,6 +38,7 @@ private:
     QString dev_name_capture;
     QString dev_name_rsz;
     QString dev_name_prev;
+    int capture_fd;
     int resizer_fd;
     int preview_fd;
     unsigned long oper_mode_1;
@@ -63,7 +65,7 @@ protected:
     void run();
 
 private:
-
+    QV4l2 *pV4l2;
 };
 
 #endif // QV4L2_H

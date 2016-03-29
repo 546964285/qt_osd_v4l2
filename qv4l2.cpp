@@ -24,11 +24,52 @@ QV4l2::QV4l2()
     this->dev_name_capture = "/dev/video0";
     this->dev_name_rsz = "/dev/davinci_resizer";
     this->dev_name_prev = "/dev/davinci_previewer";
+
+    printf("in QV4l2 constructor\n");
 }
 
 QV4l2::~QV4l2()
 {
 
+}
+
+// 1.打开设备
+bool QV4l2::open_device()
+{
+    struct stat st;
+    if(stat(dev_name_capture.toStdString().c_str(), &st) == -1)
+    {
+        printf("can't get capture device status!\n");
+        return false;
+    }
+    else
+    {
+        printf("success getting capture device status!\n");
+    }
+
+    // 分析设备状态
+    if(!S_ISCHR(st.st_mode))
+    {
+        printf("capture device status err!\n");
+        return false;
+    }
+    else
+    {
+        printf("capture device status ok!\n");
+    }
+
+    // 如果非阻塞模式打开, 即使尚未捕获到信息, 驱动依然会把缓冲区(DQBUFF)里的东西返回给应用程序
+    // 打开设备
+    capture_fd = open(dev_name_capture.toStdString().c_str(), O_RDWR | O_NONBLOCK);
+    if(capture_fd == -1)
+    {
+        printf("can't open capture device!\n");
+        return false;
+    }
+    else
+    {
+        printf("success opening capture device!\n");
+    }
 }
 
 QV4l2Thread::QV4l2Thread()
@@ -44,5 +85,9 @@ QV4l2Thread::~QV4l2Thread()
 void QV4l2Thread::run()
 {
     std::cout << "thread 2 running" << std::endl;
+    pV4l2 = new QV4l2();
+    pV4l2->open_device();
+
+
 }
 
