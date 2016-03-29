@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "qv4l2.h"
 
 namespace Ui {
     class MainWindow;
@@ -22,6 +23,8 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+
+    QV4l2Thread v4l2thread;
 
 signals:
 

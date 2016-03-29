@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMouseEvent>
-
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
+    v4l2thread.start();
+    std::cout << "thread 1 running" << std::endl;
 }
 
 MainWindow::~MainWindow()
