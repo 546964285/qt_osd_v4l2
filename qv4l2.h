@@ -9,7 +9,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-
+#include <linux/fb.h>
 #include <asm/types.h>
 #include <linux/videodev2.h>
 #include <media/davinci/dm365_ccdc.h>
@@ -17,6 +17,8 @@
 #include <media/davinci/imp_previewer.h>
 #include <media/davinci/imp_resizer.h>
 #include <media/davinci/dm365_ipipe.h>
+#include <video/davincifb_ioctl.h>
+#include <video/davinci_osd.h>
 
 #include <QThread>
 //#include <QEvent>
@@ -29,18 +31,38 @@ class QV4l2
 public:
     QV4l2();
     ~QV4l2();
-    //bool open_device(const char *szDevName);
-    bool open_device();
-    bool init_device();
-    bool init_mmap();
+
+    bool open_capture_device();
+    bool init_capture_device();
+    bool init_capture_mmap();
+    bool open_display_device();
+    bool init_display_device();
+    bool init_display_mmap();
 
 private:
+
+    struct buffer
+    {
+        void *start;
+        size_t length;
+    };
+    buffer * capture_buffers;
+    unsigned int g_imgBufCount;
+
     QString dev_name_capture;
     QString dev_name_rsz;
     QString dev_name_prev;
+    QString dev_name_osd0;
+    QString dev_name_osd1;
+    QString dev_name_vid0;
+
     int capture_fd;
     int resizer_fd;
     int preview_fd;
+    int osd0_fd;
+    int osd1_fd;
+    int vid0_fd;
+
     unsigned long oper_mode_1;
     unsigned long user_mode_1;
 
@@ -49,8 +71,17 @@ private:
     prev_channel_config prev_chan_config;
     prev_continuous_config prev_ctn_config;
 
+    v4l2_requestbuffers CapReqBufs;
+
+    fb_var_screeninfo osd0_varInfo;
+    fb_var_screeninfo osd1_varInfo;
+
+    fb_fix_screeninfo osd0_fixInfo;
+    fb_fix_screeninfo osd1_fixInfo;
+
     short yee_table[MAX_SIZE_YEE_LUT];
     int parse_yee_table(void);
+    int xioctl(int hDev, int nType, void *pData);
 };
 
 class QV4l2Thread : public QThread

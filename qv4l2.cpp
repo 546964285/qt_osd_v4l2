@@ -24,6 +24,11 @@ QV4l2::QV4l2()
     this->dev_name_capture = "/dev/video0";
     this->dev_name_rsz = "/dev/davinci_resizer";
     this->dev_name_prev = "/dev/davinci_previewer";
+    this->dev_name_osd0 = "/dev/fb0";
+    this->dev_name_osd1 = "/dev/fb2";
+    this->dev_name_vid0 = "/dev/video2";
+    this->capture_buffers = NULL;
+    this->g_imgBufCount = 3;
 
     printf("in QV4l2 constructor\n");
 }
@@ -33,10 +38,293 @@ QV4l2::~QV4l2()
 
 }
 
+int QV4l2::parse_yee_table(void)
+{
+        int ret = -1, val, i;
+        FILE *fp;
+
+        fp = fopen(YEE_TABLE_FILE, "r");
+        if (fp == NULL) {
+                printf("Error in opening file %s\n", YEE_TABLE_FILE);
+                goto out;
+        }
+
+        for (i = 0; i < MAX_SIZE_YEE_LUT; i++) {
+                fscanf(fp, "%d", &val);
+                printf("%d,", val);
+                yee_table[i] = val & 0x1FF;
+        }
+        printf("\n");
+        if (i != MAX_SIZE_YEE_LUT)
+                goto clean_file;
+        ret = 0;
+clean_file:
+        fclose(fp);
+out:
+        return ret;
+}
+
+// 对指定设备进行特定操作, 返回0成功, -1失败;
+int QV4l2::xioctl(int hDev, int nType, void *pData)
+{
+    int res;
+
+    do
+    {
+       res = ioctl(hDev, nType, pData);
+    }
+    while(res == -1 && errno == EINTR); // errno == EINTR 被其它信号中断, 重新调用
+
+    return res;
+}
+
 // 1.打开设备
-bool QV4l2::open_device()
+bool QV4l2::open_capture_device()
 {
     struct stat st;
+
+    oper_mode_1 = IMP_MODE_CONTINUOUS;
+    resizer_fd = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
+    if(-1 == resizer_fd)
+    {
+        printf("open resizer failed\n");
+        close(resizer_fd);
+        return -1;
+    }
+
+    if(-1 == ioctl(resizer_fd, RSZ_S_OPER_MODE, &oper_mode_1))
+    {
+        printf("setting default configuration failed\n");
+        return -1;
+    }
+
+    if(-1 == ioctl(resizer_fd, RSZ_G_OPER_MODE, &oper_mode_1))
+    {
+        printf("getting default configuration failed\n");
+        return -1;
+    }
+
+    if (oper_mode_1 == user_mode_1)
+    {
+        printf("RESIZER: Operating mode changed successfully to Continuous");
+    }
+
+    rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    rsz_chan_config.chain = 1;
+    rsz_chan_config.len = 0;
+    rsz_chan_config.config = NULL; // to set defaults in driver
+
+    if (-1 == ioctl(resizer_fd, RSZ_S_CONFIG, &rsz_chan_config))
+    {
+        printf("setting default configuration for continuous mode failed\n");
+        return -1;
+    }
+
+    CLEAR (rsz_ctn_config);
+    rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    rsz_chan_config.chain = 1;
+    rsz_chan_config.len = sizeof(struct rsz_continuous_config);
+    rsz_chan_config.config = &rsz_ctn_config;
+    if (-1 == ioctl(resizer_fd, RSZ_G_CONFIG, &rsz_chan_config))
+    {
+        printf("getting default configuration for continuous mode failed\n");
+        return -1;
+    }
+
+    rsz_ctn_config.output1.enable = 1;
+    rsz_ctn_config.output2.enable = 0;
+    rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    rsz_chan_config.chain = 1;
+    rsz_chan_config.len = sizeof(struct rsz_continuous_config);
+    rsz_chan_config.config = &rsz_ctn_config;
+    if (-1 == ioctl(resizer_fd, RSZ_S_CONFIG, &rsz_chan_config))
+    {
+        printf("setting default configuration for continuous mode failed\n");
+        return -1;
+    }
+
+    oper_mode_1 = IMP_MODE_CONTINUOUS; // same as resizer
+    preview_fd = open(dev_name_prev.toStdString().c_str(), O_RDWR);
+    if(-1 == preview_fd)
+    {
+        printf("open previewer failed\n");
+        close(preview_fd);
+        return -1;
+    }
+
+    if(-1 == ioctl(preview_fd, PREV_S_OPER_MODE, &oper_mode_1))
+    {
+        printf("Can't set operation mode\n");
+        return -1;
+    }
+
+    if(-1 == (ioctl(preview_fd, PREV_G_OPER_MODE, &user_mode_1)))
+    {
+        printf("Can't get operation mode\n");
+        return -1;
+    }
+
+    if (oper_mode_1 == user_mode_1)
+    {
+        printf("Operating mode changed successfully to continuous in previewer\n");
+    }
+
+    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    prev_chan_config.len = 0;
+    prev_chan_config.config = NULL; // to set defaults in driver
+    if(-1 == ioctl(preview_fd, PREV_S_CONFIG, &prev_chan_config))
+    {
+        printf("Error in setting default configuration\n");
+        return -1;
+    }
+
+    CLEAR (prev_ctn_config);
+    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    prev_chan_config.len = sizeof(struct prev_continuous_config);
+    prev_chan_config.config = &prev_ctn_config;
+    if(-1 == ioctl(preview_fd, PREV_G_CONFIG, &prev_chan_config))
+    {
+        printf("Error in getting configuration from driver\n");
+        return -1;
+    }
+
+    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    prev_chan_config.len = sizeof(struct prev_continuous_config);
+    prev_chan_config.config = &prev_ctn_config;
+    prev_ctn_config.input.colp_elep= IPIPE_BLUE;
+    prev_ctn_config.input.colp_elop= IPIPE_GREEN_BLUE;
+    prev_ctn_config.input.colp_olep= IPIPE_GREEN_RED;
+    prev_ctn_config.input.colp_olop= IPIPE_RED;
+    if(-1 == ioctl(preview_fd, PREV_S_CONFIG, &prev_chan_config))
+    {
+        printf("Error in setting default configuration\n");
+        return -1;
+    }
+
+    struct prev_cap cap;
+    struct prev_module_param mod_param;
+    struct prev_wb wb;
+    struct prev_lum_adj lum_adj;
+    struct prev_gamma gamma;
+    struct prev_yee yee;
+
+    int ret;
+
+    cap.index=0;
+    while (1)
+    {
+        ret = ioctl(preview_fd , PREV_ENUM_CAP, &cap);
+        if (ret < 0)
+        {
+            break;
+        }
+
+        // find the defaults for this module
+
+        strcpy(mod_param.version,cap.version);
+        mod_param.module_id = cap.module_id;
+        // try set parameter for this module
+        if(cap.module_id == PREV_WB)
+        {
+            printf("cap.module_id == PREV_WB\n");
+            bzero((void *)&wb, sizeof (struct prev_wb));
+            wb.gain_r.integer = 1;
+            wb.gain_r.decimal = 0;
+            wb.gain_gr.integer = 1;
+            wb.gain_gr.decimal = 0;
+            wb.gain_gb.integer = 1;
+            wb.gain_gb.decimal = 0;
+            wb.gain_b.integer = 1;
+            wb.gain_b.decimal = 0;
+            wb.ofst_r = 0;
+            wb.ofst_gb = 0;
+            wb.ofst_b = 0;
+            mod_param.len = sizeof(struct prev_wb);
+            mod_param.param = &wb;
+                }
+        else if(cap.module_id == PREV_LUM_ADJ)
+        {
+            printf("cap.module_id == PREV_LUM_ADJ\n");
+            bzero((void *)&lum_adj, sizeof (struct prev_lum_adj));
+                        lum_adj.brightness = 0;
+                        lum_adj.contrast = 20;
+                        mod_param.len = sizeof (struct prev_lum_adj);
+                        mod_param.param = &lum_adj;
+        }
+        else if (cap.module_id == PREV_GAMMA)
+        {
+            printf("Setting gamma for %s\n", cap.module_name);
+            bzero((void *)&gamma, sizeof (struct prev_gamma));
+            gamma.bypass_r = 1;
+            gamma.bypass_b = 1;
+            gamma.bypass_g = 1;
+            gamma.tbl_sel = IPIPE_GAMMA_TBL_RAM;
+            gamma.tbl_size = IPIPE_GAMMA_TBL_SZ_512;
+            mod_param.len = sizeof (struct prev_gamma);
+            mod_param.param = &gamma;
+        }
+        else if (cap.module_id == PREV_YEE)
+        {
+            printf("Setting Edge Enhancement for %s\n", cap.module_name);
+            bzero((void *)&yee, sizeof (struct prev_yee));
+            bzero((void *)&yee_table, sizeof (struct prev_yee));
+            yee.en = 1;
+            //yee.en_halo_red = 1;
+            yee.en_halo_red = 0;
+            //yee.merge_meth = IPIPE_YEE_ABS_MAX;
+            yee.merge_meth = IPIPE_YEE_EE_ES;
+            yee.hpf_shft = 6; // 5, 10
+            //yee.hpf_coef_00 = 8;
+            //yee.hpf_coef_01 = 2;
+            //yee.hpf_coef_02 = -2;
+            //yee.hpf_coef_10 = 2;
+            //yee.hpf_coef_11 = 0;
+            //yee.hpf_coef_12 = -1;
+            //yee.hpf_coef_20 = -2;
+            //yee.hpf_coef_21 = -1;
+            //yee.hpf_coef_22 = 0;
+            yee.hpf_coef_00 = 84,
+            yee.hpf_coef_01 = (-8 & 0x3FF),
+            yee.hpf_coef_02 = (-4 & 0x3FF),
+            yee.hpf_coef_10 = (-8 & 0x3FF),
+            yee.hpf_coef_11 = (-4 & 0x3FF),
+            yee.hpf_coef_12 = (-2 & 0x3FF),
+            yee.hpf_coef_20 = (-4 & 0x3FF),
+            yee.hpf_coef_21 = (-2 & 0x3FF),
+            yee.hpf_coef_22 = (-1 & 0x3FF),
+            yee.yee_thr = 20; //12
+            yee.es_gain = 128;
+            yee.es_thr1 = 768;
+            yee.es_thr2 = 32;
+            yee.es_gain_grad = 32;
+            yee.es_ofst_grad = 0;
+            if(parse_yee_table() <0)
+            {
+                printf("read yee table error.\n");
+            }
+            yee.table = yee_table;
+
+            mod_param.len = sizeof (struct prev_yee);
+            mod_param.param = &yee;
+        }
+        else
+        {
+            // using defaults
+            printf("Setting default for %s\n", cap.module_name);
+            mod_param.param = NULL;
+        }
+
+        if (ioctl(preview_fd, PREV_S_PARAM, &mod_param) < 0)
+        {
+            printf("Error in Setting %s params from driver\n", cap.module_name);
+            close(preview_fd);
+            //exit (EXIT_FAILURE);
+        }
+
+
+        cap.index++;
+    }
+
     if(stat(dev_name_capture.toStdString().c_str(), &st) == -1)
     {
         printf("can't get capture device status!\n");
@@ -70,6 +358,260 @@ bool QV4l2::open_device()
     {
         printf("success opening capture device!\n");
     }
+
+    return true;
+}
+
+bool QV4l2::init_capture_device()
+{
+    struct v4l2_capability v4l2Cap;
+    // 获取并分析v4l2设备属性
+    if(xioctl(capture_fd, VIDIOC_QUERYCAP, &v4l2Cap) == -1)
+    {
+        printf("VIDIOC_QUERYCAP failed. %s is no a V4L2 device\n", dev_name_capture.toStdString().c_str());
+        return false;
+    }
+    else
+    {
+        printf("VIDIOC_QUERYCAP ok. %s is a V4L2 device\n", dev_name_capture.toStdString().c_str());
+        if(!(v4l2Cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
+        {
+            printf("%s can't be captured.\n", dev_name_capture.toStdString().c_str());
+            return false;
+        }
+
+//        if(!(v4l2Cap.capabilities & V4L2_CAP_READWRITE))
+//        {
+//            printf("%s can't be read.\n", dev_name_capture.toStdString().c_str());
+//            return false;
+//        }
+
+        // 是否支持mmap 或 userptr
+        if(!(v4l2Cap.capabilities & V4L2_CAP_STREAMING))
+        {
+            printf("%s can't streaming.\n", dev_name_capture.toStdString().c_str());
+            return false;
+        }
+    }
+
+    // 枚举支持的视频格式
+    struct v4l2_fmtdesc fmtdest;
+    fmtdest.index = 0;
+    fmtdest.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    while(xioctl(capture_fd, VIDIOC_ENUM_FMT, &fmtdest) == 0)
+    {
+        fmtdest.index++;
+        char szFmt[5] = {0};
+        memcpy(szFmt, &fmtdest.pixelformat, 4);
+        printf("VIDIOC_ENUM_FMT = %s ", szFmt);
+
+        // 列举视频大小
+        struct v4l2_frmsizeenum frmSize;
+        frmSize.index = 0;
+        frmSize.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        frmSize.pixel_format = fmtdest.pixelformat;
+        while(xioctl(capture_fd, VIDIOC_ENUM_FRAMESIZES, &frmSize) == 0)
+        {
+            frmSize.index++;
+            printf("[%d x %d], ", frmSize.discrete.width, frmSize.discrete.height);
+        }
+        printf("\n");
+    }
+
+    // 设置视频格式
+    struct v4l2_format v4l2Fmt;
+    memset(&v4l2Fmt, 0, sizeof(v4l2Fmt));
+    v4l2Fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    struct v4l2_pix_format *pFmt = &v4l2Fmt.fmt.pix;
+    pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
+    pFmt->width = 384;
+    pFmt->height = 384;
+    if(xioctl(capture_fd, VIDIOC_S_FMT, &v4l2Fmt) == -1)
+    {
+        printf("VIDIOC_S_FMT failed.\n");
+    }
+    else
+    {
+        printf("VIDIOC_S_FMT ok!\n");
+    }
+
+    // 获取当前视频格式
+    //struct v4l2_format v4l2Fmt;
+    memset(&v4l2Fmt, 0, sizeof(v4l2Fmt));
+    v4l2Fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if(xioctl(capture_fd, VIDIOC_G_FMT, &v4l2Fmt) == -1)
+    {
+        printf("VIDIOC_G_FMT failed.\n");
+        return false;
+    }
+    else
+    {
+        char szFmt[5] = {0};
+        memcpy(szFmt, &v4l2Fmt.fmt.pix.pixelformat, 4);
+        struct v4l2_pix_format *pFmt = &v4l2Fmt.fmt.pix;
+        printf("VIDIOC_G_FMT: %s, %d x %d, tytesperline = %d, size = %d, field = %d\n",
+               szFmt, pFmt->width, pFmt->height, pFmt->bytesperline, pFmt->sizeimage, pFmt->field);
+    }
+
+//    // set frame-rate
+//    struct v4l2_streamparm parm;
+//    CLEAR (parm);
+//    parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+//    parm.parm.capture.timeperframe.numerator = 1;
+//    parm.parm.capture.timeperframe.denominator = 60;
+//    parm.parm.capture.capturemode = 0;
+//    if (-1 == ioctl(capture_fd, VIDIOC_S_PARM, &parm))
+//    {
+//        printf("VIDIOC_S_PARM failed ");
+//    }
+
+//    if (-1 == ioctl(capture_fd, VIDIOC_G_PARM, &parm))
+//    {
+//        printf("VIDIOC_G_PARM failed\n");
+//    }
+//    else
+//    {
+//        printf("streamparm:\n\tnumerator =%d\n\tdenominator=%d\n\tcapturemode=%d\n\n",
+//        parm.parm.capture.timeperframe.numerator,
+//        parm.parm.capture.timeperframe.denominator,
+//        parm.parm.capture.capturemode);
+//    }
+
+    return true;
+}
+
+bool QV4l2::init_capture_mmap()
+{
+    // 建立1个空的视频缓冲区队列,返回的v4l2ReqBufs.count是实际队列长度
+    CLEAR (CapReqBufs);
+    CapReqBufs.count = g_imgBufCount;
+    CapReqBufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    CapReqBufs.memory = V4L2_MEMORY_MMAP;
+    if(xioctl(capture_fd, VIDIOC_REQBUFS, &CapReqBufs) == -1)
+    {
+        printf("VIDIOC_REQBUFS failed.\n");
+        return false;
+    }
+    else
+    {
+        g_imgBufCount = CapReqBufs.count;//取得实际队列长度
+        printf("success: request %d buffers for capture\n", g_imgBufCount);
+    }
+
+    // 2 is minimum buffers
+    if (CapReqBufs.count < 2)
+    {
+        printf("Insufficient buffer memory on %s\n", dev_name_capture.toStdString().c_str());
+        return false;
+    }
+
+    capture_buffers = (buffer *) calloc (CapReqBufs.count, sizeof (*capture_buffers));
+
+    if (!capture_buffers)
+    {
+        printf("fail: Out of memory for capture\n");
+        return false;
+    }
+
+    // 在内核空间申请内存，并映射到用户空间
+    for(unsigned int i = 0; i < CapReqBufs.count; i++)
+    {
+        struct v4l2_buffer buf;
+        CLEAR (buf);
+
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = i;
+
+        if(xioctl(capture_fd, VIDIOC_QUERYBUF, &buf) == -1)
+        {
+            printf("fail: in init_capture_buffers: VIDIOC_QUERYBUF\n");
+            return false;
+        }
+        else
+        {
+            printf("success: query buffers for capture\n");
+            printf("\tbuffer.length = %d\n",buf.length);
+            printf("\tbuffer.bytesused = %d\n",buf.bytesused);
+        }
+
+        capture_buffers[i].length = buf.length;
+        capture_buffers[i].start =
+                mmap(NULL, // start anywhere
+                     buf.length,
+                     PROT_READ | PROT_WRITE,
+                     MAP_SHARED,
+                     capture_fd, buf.m.offset);
+
+        if(MAP_FAILED == capture_buffers[i].start)
+        {
+            printf("fail: mmap for capture buffers\n");
+            return false;
+        }
+    }
+
+    for(unsigned int i = 0; i < CapReqBufs.count; i++)
+    {
+        v4l2_buffer buf;
+        CLEAR(buf);
+
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory =V4L2_MEMORY_MMAP;
+        buf.index = i;
+
+        if(-1 == ioctl(capture_fd, VIDIOC_QBUF, &buf))
+        {
+            printf("fail: test capture stream queue buffer %d\n", i);
+            return false;
+        }
+        else
+        {
+            printf("success: test capture stream queue buffer %d\n", i);
+        }
+    }
+
+    v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if(-1 == ioctl(capture_fd, VIDIOC_STREAMON, &type))
+    {
+        printf("fail: capture stream on\n");
+        return false;
+    }
+    else
+    {
+        printf("success: capture stream on\n\n");
+    }
+
+    return true;
+}
+
+bool QV4l2::open_display_device()
+{
+    vid0_fd = open(dev_name_vid0.toStdString().c_str(), O_RDWR);
+
+    if (-1 == vid0_fd)
+    {
+        printf("fail: open VID0 display device\n");
+        return false;
+    }
+    else
+    {
+        printf("seccess: open VID0 display device\n");
+    }
+
+    return true;
+}
+
+bool QV4l2::init_display_device()
+{
+
+    return true;
+}
+
+bool QV4l2::init_display_mmap()
+{
+
+    return true;
 }
 
 QV4l2Thread::QV4l2Thread()
@@ -86,8 +628,9 @@ void QV4l2Thread::run()
 {
     std::cout << "thread 2 running" << std::endl;
     pV4l2 = new QV4l2();
-    pV4l2->open_device();
-
-
+    pV4l2->open_capture_device();
+    pV4l2->init_capture_device();
+    pV4l2->init_capture_mmap();
+    pV4l2->open_display_device();
 }
 
