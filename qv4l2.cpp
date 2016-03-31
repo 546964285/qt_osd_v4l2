@@ -793,7 +793,7 @@ bool QV4l2::start_loop()
     char *displaybuffer = NULL;
     char *src = NULL;
     char *dest = NULL;
-    char *dst = NULL;
+//    char *dst = NULL;
     int i,j,k;
     int ret;
 
@@ -812,21 +812,21 @@ bool QV4l2::start_loop()
             return false;
         }
 
-        printf("Opps!!\n");
         displaybuffer = (char*)get_display_buffer(vid0_fd);
         if (NULL == displaybuffer)
         {
             printf("Error in getting the  display buffer:VID1\n");
-            //return ret;
+            return false;
         }
 
         src = (char *)capture_buffers[buf.index].start;
 
         //dst = (char *)calloc(294912, sizeof(char));
-
+        //printf("Opps!\n");
+        //printf("displaybuffer=%p\n",displaybuffer);
         dest = displaybuffer;
 
-        for(i=0 ; i < 640; i++)
+        for(i=0 ; i < 384; i++)
         {
             memcpy(dest, src, 384*2);
             src += 384*2;
@@ -834,15 +834,17 @@ bool QV4l2::start_loop()
         }
 
         //free(dst);
-
+        //printf("displaybuffer=%p\n",displaybuffer);
         ret = put_display_buffer(vid0_fd, displaybuffer);
-
+        //printf("Opps!!!\n");
         //display_bitmap_osd1();
 
         if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &buf))
         {
             printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
         }
+
+//        printf("Opps!!\n");
     }
     ret = stop_capture(capture_fd);
     if (ret < 0)
@@ -860,6 +862,7 @@ void * QV4l2::get_display_buffer(int vid_win)
                 perror("VIDIOC_DQBUF\n");
                 return NULL;
         }
+        //printf("index = %d, addr=%p\n", buf.index, vid0Buf[buf.index].start);
         return vid0Buf[buf.index].start;
 }
 
@@ -872,12 +875,23 @@ int QV4l2::put_display_buffer(int vid_win, void *addr)
                 return -1;
         memset(&buf, 0, sizeof(buf));
 
-        for (i = 0; i < 3; i++) {
-                if (addr == vid0Buf[i].start) {
-                        index = i;
-                        break;
-                }
+        for (i = 0; i < 3; i++)
+        {
+            if (addr == vid0Buf[i].start)
+            {
+                index = i;
+                //printf("found out same index\n");
+                //printf("index = %d, addr=%p, start=%p\n", i, addr, vid0Buf[i].start);
+                break;
+            }
+            else
+            {
+                //printf("could not find same index\n");
+                //printf("index = %d, addr=%p, start=%p\n", i, addr, vid0Buf[i].start);
+            }
         }
+        //printf("index=%d\n",index);
+        //printf("Opps!!\n");
         buf.m.offset = (unsigned long)addr;
         buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
         buf.memory = V4L2_MEMORY_MMAP;
