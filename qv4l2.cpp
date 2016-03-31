@@ -604,14 +604,210 @@ bool QV4l2::open_display_device()
 
 bool QV4l2::init_display_device()
 {
+    int ret = 0;
+    v4l2_capability capability;
+
+    ret = ioctl(vid0_fd, VIDIOC_QUERYCAP, &capability);
+    if (ret < 0)
+    {
+        printf("fail: video out query capability\n");
+        return false;
+    }
+    else
+    {
+        printf("seccess: video out query capability\n");
+        if (capability.capabilities & V4L2_CAP_VIDEO_OUTPUT)
+        {
+            printf("\tDisplay capability is supported\n");
+        }
+        if (capability.capabilities & V4L2_CAP_STREAMING)
+        {
+            printf("\tStreaming is supported\n");
+        }
+    }
+
+    // set display format
+    v4l2_format setfmt;
+    CLEAR(setfmt);
+    setfmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    setfmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY;
+    setfmt.fmt.pix.width = 384;
+    setfmt.fmt.pix.height = 384;
+    setfmt.fmt.pix.field = V4L2_FIELD_NONE;
+
+    ret = ioctl(vid0_fd, VIDIOC_S_FMT, &setfmt);
+    if (ret < 0)
+    {
+        printf("fail: set format for display\n");
+    }
+    else
+    {
+        printf("success: set format for display\n");
+    }
+
+    // set display crop
+    v4l2_crop crop;
+    CLEAR(crop);
+
+    crop.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    crop.c.height=384;
+    crop.c.width=384;
+    crop.c.top=48;
+    crop.c.left=48;
+
+    ret = ioctl(vid0_fd, VIDIOC_S_CROP, &crop);
+    if (ret < 0)
+    {
+        printf("fail: set crop for display\n");
+    }
+    else
+    {
+        printf("success: set crop for display\n");
+    }
+
+    int disppitch, dispheight, dispwidth;
+    v4l2_format fmt;
+    CLEAR(fmt);
+    fmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    ret = ioctl(vid0_fd, VIDIOC_G_FMT, &fmt);
+
+    if (ret < 0)
+    {
+        printf("fail: get format for display\n");
+    }
+    else
+    {
+        printf("success: get format for display\n");
+        dispheight = fmt.fmt.pix.height;
+        disppitch = fmt.fmt.pix.bytesperline;
+        dispwidth = fmt.fmt.pix.width;
+        printf("\tdispheight = %d\n\tdisppitch = %d\n\tdispwidth = %d\n", dispheight, disppitch, dispwidth);
+        printf("\timagesize = %d\n", fmt.fmt.pix.sizeimage);
+    }
 
     return true;
 }
 
 bool QV4l2::init_display_mmap()
 {
+    int ret = 0;
+
+    VidReqBufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    VidReqBufs.count = g_imgBufCount;
+    VidReqBufs.memory = V4L2_MEMORY_MMAP;
+    ret = ioctl(vid0_fd, VIDIOC_REQBUFS, &VidReqBufs);
+    if (ret < 0)
+    {
+        printf("fail: request buffers for display\n");
+        return false;
+    }
+        else
+    {
+        printf("success: request buffers for display\n");
+    }
+
+    v4l2_buffer buf;
+
+    vid0Buf = (buffer *)calloc(VidReqBufs.count, sizeof(struct buffer));
+    if (!vid0Buf)
+    {
+        printf("fail: Out of memory for display\n");
+        return false;
+    }
+
+    for(unsigned int i = 0; i < VidReqBufs.count; i++)
+    {
+        buf.index = i;
+        buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        buf.memory = V4L2_MEMORY_MMAP;
+        ret = ioctl(vid0_fd, VIDIOC_QUERYBUF, &buf);
+        if (ret < 0)
+        {
+            printf("fail: query buffer for display\n");
+            return false;
+        }
+        else
+        {
+            printf("success: query buffer for display\n");
+        }
+
+        vid0Buf[i].length = buf.length;
+        vid0Buf[i].start = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, vid0_fd, buf.m.offset);
+        printf("buffer:%d phy:%x mmap:%p length:%d\n",
+            buf.index,
+            buf.m.offset,
+            vid0Buf[i].start,
+            buf.length);
+
+        if (MAP_FAILED == vid0Buf[i].start)
+        {
+            printf("fail: mmap buffer for display\n");
+        }
+        else
+        {
+            printf("success: mmap buffer for display\n");
+        }
+
+        //memset(vid0Buf[i].start, 0x80, buf.length);
+        memset(vid0Buf[i].start, 0x00, buf.length);
+    }
+
+    v4l2_buf_type type;
+    for(unsigned int i = 0; i < VidReqBufs.count; i++)
+    {
+        v4l2_buffer buf;
+        CLEAR (buf);
+
+        buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = i;
+        ret = ioctl(vid0_fd, VIDIOC_QBUF, &buf);
+        if(ret < 0)
+        {
+            printf("fail: test display stream queue buffer %d\n", i);
+        }
+        else
+        {
+            printf("success: test display stream queue buffer %d\n", i);
+        }
+    }
+
+    type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    ret = ioctl(vid0_fd, VIDIOC_STREAMON, &type);
+    if (ret < 0)
+    {
+        printf("fail: display stream on\n");
+        return false;
+    }
+    else
+    {
+        printf("success: display stream on\n");
+    }
 
     return true;
+}
+
+bool QV4l2::start_loop()
+{
+    v4l2_buffer buf;
+
+    while(1)
+    {
+        CLEAR(buf);
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+
+        // determine ready buffer
+        if (-1 == ioctl(capture_fd, VIDIOC_DQBUF, &buf))
+        {
+            if (EAGAIN == errno)
+                continue;
+            printf("StartCameraCaputre:ioctl:VIDIOC_DQBUF\n");
+            return false;
+        }
+
+
+    }
 }
 
 QV4l2Thread::QV4l2Thread()
@@ -632,5 +828,8 @@ void QV4l2Thread::run()
     pV4l2->init_capture_device();
     pV4l2->init_capture_mmap();
     pV4l2->open_display_device();
+    pV4l2->init_display_device();
+    pV4l2->init_display_mmap();
+    pV4l2->start_loop();
 }
 

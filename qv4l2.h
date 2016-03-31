@@ -38,6 +38,7 @@ public:
     bool open_display_device();
     bool init_display_device();
     bool init_display_mmap();
+    bool start_loop();
 
 private:
 
@@ -48,6 +49,7 @@ private:
     };
     buffer * capture_buffers;
     unsigned int g_imgBufCount;
+    buffer *vid0Buf;
 
     QString dev_name_capture;
     QString dev_name_rsz;
@@ -72,6 +74,7 @@ private:
     prev_continuous_config prev_ctn_config;
 
     v4l2_requestbuffers CapReqBufs;
+    v4l2_requestbuffers VidReqBufs;
 
     fb_var_screeninfo osd0_varInfo;
     fb_var_screeninfo osd1_varInfo;
