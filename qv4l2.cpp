@@ -790,6 +790,12 @@ bool QV4l2::init_display_mmap()
 bool QV4l2::start_loop()
 {
     v4l2_buffer buf;
+    char *displaybuffer = NULL;
+    char *src = NULL;
+    char *dest = NULL;
+    char *dst = NULL;
+    int i,j,k;
+    int ret;
 
     while(1)
     {
@@ -806,9 +812,91 @@ bool QV4l2::start_loop()
             return false;
         }
 
+        printf("Opps!!\n");
+        displaybuffer = (char*)get_display_buffer(vid0_fd);
+        if (NULL == displaybuffer)
+        {
+            printf("Error in getting the  display buffer:VID1\n");
+            //return ret;
+        }
 
+        src = (char *)capture_buffers[buf.index].start;
+
+        //dst = (char *)calloc(294912, sizeof(char));
+
+        dest = displaybuffer;
+
+        for(i=0 ; i < 640; i++)
+        {
+            memcpy(dest, src, 384*2);
+            src += 384*2;
+            dest += 384*2;
+        }
+
+        //free(dst);
+
+        ret = put_display_buffer(vid0_fd, displaybuffer);
+
+        //display_bitmap_osd1();
+
+        if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &buf))
+        {
+            printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
+        }
     }
+    ret = stop_capture(capture_fd);
+    if (ret < 0)
+        printf("Error in VIDIOC_STREAMOFF:capture\n");
 }
+
+void * QV4l2::get_display_buffer(int vid_win)
+{
+        int ret;
+        struct v4l2_buffer buf;
+        memset(&buf, 0, sizeof(buf));
+        buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        ret = ioctl(vid_win, VIDIOC_DQBUF, &buf);
+        if (ret < 0) {
+                perror("VIDIOC_DQBUF\n");
+                return NULL;
+        }
+        return vid0Buf[buf.index].start;
+}
+
+int QV4l2::put_display_buffer(int vid_win, void *addr)
+{
+        struct v4l2_buffer buf;
+        int i, index = 0;
+        int ret;
+        if (addr == NULL)
+                return -1;
+        memset(&buf, 0, sizeof(buf));
+
+        for (i = 0; i < 3; i++) {
+                if (addr == vid0Buf[i].start) {
+                        index = i;
+                        break;
+                }
+        }
+        buf.m.offset = (unsigned long)addr;
+        buf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = index;
+//printf("in put_display_buffer();\n");
+        ret = ioctl(vid_win, VIDIOC_QBUF, &buf);
+        return ret;
+}
+
+int QV4l2::stop_capture(int vid_win)
+{
+        int ret;
+        enum v4l2_buf_type type;
+        type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        ret = ioctl(vid_win, VIDIOC_STREAMOFF, &type);
+        return ret;
+}
+
+
 
 QV4l2Thread::QV4l2Thread()
 {

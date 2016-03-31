@@ -39,7 +39,9 @@ public:
     bool init_display_device();
     bool init_display_mmap();
     bool start_loop();
-
+    int stop_capture(int vid_win);
+    void * get_display_buffer(int vid_win);
+    int put_display_buffer(int vid_win, void *addr);
 private:
 
     struct buffer
