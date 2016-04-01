@@ -787,6 +787,158 @@ bool QV4l2::init_display_mmap()
     return true;
 }
 
+// blend window control
+bool QV4l2::open_osd1_device()
+{
+    osd1_fd = open(dev_name_osd1.toStdString().c_str(), O_RDWR);
+    if (-1 == osd1_fd)
+    {
+        printf("fail: open osd1 device\n");
+        return false;
+    }
+    else
+    {
+        printf("seccess: open osd1 device\n");
+    }
+
+    return true;
+}
+
+bool QV4l2::init_osd1_device()
+{
+    vpbe_window_position_t pos;
+
+    if (ioctl(osd1_fd, FBIOGET_FSCREENINFO, &osd1_fixInfo) < 0)
+    {
+        printf("\nFailed FBIOGET_FSCREENINFO osd1");
+        return false;
+    }
+    else
+    {
+        printf("get default info:\n");
+        printf("osd1_fixInfo.id=%s\n", osd1_fixInfo.id);
+        printf("osd1_fixInfo.accel=%d\n", osd1_fixInfo.accel);
+        printf("osd1_fixInfo.line_length=%d\n", osd1_fixInfo.line_length);
+        printf("osd1_fixInfo.mmio_len=%d\n", osd1_fixInfo.mmio_len);
+        printf("osd1_fixInfo.smem_len=%d\n", osd1_fixInfo.smem_len);
+        printf("osd1_fixInfo.smem_start=0x%lx\n", osd1_fixInfo.smem_start);
+        printf("osd1_fixInfo.type=%d\n", osd1_fixInfo.type);
+        printf("osd1_fixInfo.type_aux=%d\n", osd1_fixInfo.type_aux);
+        printf("osd1_fixInfo.visual=%d\n", osd1_fixInfo.visual);
+        printf("osd1_fixInfo.xpanstep=%d\n", osd1_fixInfo.xpanstep);
+        printf("osd1_fixInfo.ypanstep=%d\n", osd1_fixInfo.ypanstep);
+        printf("osd1_fixInfo.ywrapstep=%d\n\n", osd1_fixInfo.ywrapstep);
+    }
+
+    // Get Existing var_screeninfo for osd0 window
+    if (ioctl(osd1_fd, FBIOGET_VSCREENINFO, &osd1_varInfo) < 0)
+    {
+        printf("\nFailed FBIOGET_VSCREENINFO");
+        return false;
+    }
+    else
+    {
+        printf("osd1_varInfo.xres=%d\n", osd1_varInfo.xres);
+        printf("osd1_varInfo.yres=%d\n", osd1_varInfo.yres);
+        printf("osd1_varInfo.xres_virtual=%d\n", osd1_varInfo.xres_virtual);
+        printf("osd1_varInfo.yres_virtual=%d\n", osd1_varInfo.yres_virtual);
+        printf("osd1_varInfo.xoffset=%d\n", osd1_varInfo.xoffset);
+        printf("osd1_varInfo.yoffset=%d\n", osd1_varInfo.yoffset);
+        printf("osd1_varInfo.accel_flags=%d\n", osd1_varInfo.accel_flags);
+        printf("osd1_varInfo.activate=%d\n", osd1_varInfo.activate);
+        printf("osd1_varInfo.bits_per_pixel=%d\n", osd1_varInfo.bits_per_pixel);
+        printf("osd1_varInfo.grayscale=%d\n", osd1_varInfo.grayscale);
+        printf("osd1_varInfo.height=%d\n", osd1_varInfo.height);
+        printf("osd1_varInfo.hsync_len=%d\n", osd1_varInfo.hsync_len);
+        printf("osd1_varInfo.left_margin=%d\n", osd1_varInfo.left_margin);
+        printf("osd1_varInfo.lower_margin=%d\n", osd1_varInfo.lower_margin);
+        printf("osd1_varInfo.nonstd=%d\n", osd1_varInfo.nonstd);
+        printf("osd1_varInfo.pixclock=%d\n", osd1_varInfo.pixclock);
+        printf("osd1_varInfo.right_margin=%d\n", osd1_varInfo.right_margin);
+        printf("osd1_varInfo.rotate=%d\n", osd1_varInfo.rotate);
+        printf("osd1_varInfo.sync=%d\n", osd1_varInfo.sync);
+        printf("osd1_varInfo.upper_margin=%d\n", osd1_varInfo.upper_margin);
+        printf("osd1_varInfo.vmode=%d\n", osd1_varInfo.vmode);
+        printf("osd1_varInfo.vsync_len=%d\n", osd1_varInfo.vsync_len);
+        printf("osd1_varInfo.width=%d\n", osd1_varInfo.width);
+        printf("osd1_varInfo.xoffset=%d\n", osd1_varInfo.xoffset);
+        printf("osd1_varInfo.xres=%d\n", osd1_varInfo.xres);
+        printf("osd1_varInfo.xres_virtual=%d\n", osd1_varInfo.xres_virtual);
+        printf("osd1_varInfo.yoffset=%d\n", osd1_varInfo.yoffset);
+        printf("osd1_varInfo.yres=%d\n", osd1_varInfo.yres);
+        printf("osd1_varInfo.yres_virtual=%d\n\n", osd1_varInfo.yres_virtual);
+    }
+
+//    test_data.osd1_bpp = 4;
+//    test_data.osd1_xpos = 0;
+//    test_data.osd1_xpos = 0;
+//    test_data.osd1_width = 480;
+//    test_data.osd1_height = 640;
+//    test_data.osd1_vmode = FB_VMODE_NONINTERLACED;
+//    test_data.osd1_coloridx = BLUE_COLOR;
+    // Modify the resolution and bpp as required
+    osd1_varInfo.xres = 480;
+    osd1_varInfo.yres = 640;
+    osd1_varInfo.bits_per_pixel = 4;
+    osd1_varInfo.vmode = FB_VMODE_NONINTERLACED;
+    osd1_varInfo.xres_virtual = 480;
+    // Change the virtual Y-resolution for buffer flipping (2 buffers)
+    osd1_varInfo.yres_virtual = osd1_varInfo.yres * 2;
+    osd1_varInfo.nonstd = 1;
+
+    // Set osd1 window format
+    if (ioctl(osd1_fd, FBIOPUT_VSCREENINFO, &osd1_varInfo) < 0)
+    {
+        printf("\nFailed FBIOPUT_VSCREENINFO for osd1");
+        return false;
+    }
+
+    // Set window position
+    pos.xpos = 0;
+    pos.ypos = 0;
+
+    if (ioctl(osd1_fd, FBIO_SETPOSX, &pos.xpos) < 0)
+    {
+        printf("\nFailed osd1 FBIO_SETPOSX\n\n");
+        return false;
+    }
+    if (ioctl(osd1_fd, FBIO_SETPOSY, &pos.ypos) < 0)
+    {
+        printf("\nFailed osd1 FBIO_SETPOSY\n\n");
+        return false;
+    }
+
+    // Enable the window
+    if (ioctl(osd1_fd, FBIOBLANK, 0))
+    {
+        printf("Error enabling OSD1\n");
+        return false;
+    }
+
+    return true;
+}
+
+bool QV4l2::init_osd1_mmap()
+{
+    char *osd1buff = NULL;
+    int memsize;
+
+    memsize = ((osd1_fixInfo.line_length*osd1_varInfo.yres));
+    osd1buff = (char *) mmap(NULL,memsize,PROT_READ|PROT_WRITE,MAP_SHARED,osd1_fd,0);
+
+    if (osd1buff == MAP_FAILED)
+    {
+        printf("mmap failed\n");
+        return false;
+    }
+
+    memset(osd1buff,0x00,memsize);
+
+    munmap(osd1buff,memsize);
+
+    return true;
+}
+
 bool QV4l2::start_loop()
 {
     v4l2_buffer buf;
@@ -794,7 +946,7 @@ bool QV4l2::start_loop()
     char *src = NULL;
     char *dest = NULL;
 //    char *dst = NULL;
-    int i,j,k;
+    int i;
     int ret;
 
     while(1)
@@ -929,6 +1081,9 @@ void QV4l2Thread::run()
     pV4l2->open_capture_device();
     pV4l2->init_capture_device();
     pV4l2->init_capture_mmap();
+    pV4l2->open_osd1_device();
+    pV4l2->init_osd1_device();
+    pV4l2->init_osd1_mmap();
     pV4l2->open_display_device();
     pV4l2->init_display_device();
     pV4l2->init_display_mmap();
