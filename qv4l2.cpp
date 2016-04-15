@@ -787,6 +787,129 @@ bool QV4l2::init_display_mmap()
     return true;
 }
 
+bool QV4l2::open_osd0_device()
+{
+    osd0_fd = open(dev_name_osd0.toStdString().c_str(), O_RDWR);
+    if (-1 == osd0_fd)
+    {
+        printf("fail: open osd0 device\n");
+        return false;
+    }
+    else
+    {
+        printf("seccess: open osd0 device\n");
+    }
+
+    return true;
+}
+
+bool QV4l2::init_osd0_device()
+{
+    vpbe_window_position_t pos;
+
+    if (ioctl(osd0_fd, FBIOGET_FSCREENINFO, &osd0_fixInfo) < 0)
+    {
+        printf("\nFailed FBIOGET_FSCREENINFO osd0");
+        return false;
+    }
+    else
+    {
+        printf("get default info:\n");
+        printf("osd0_fixInfo.id=%s\n", osd0_fixInfo.id);
+        printf("osd0_fixInfo.accel=%d\n", osd0_fixInfo.accel);
+        printf("osd0_fixInfo.line_length=%d\n", osd0_fixInfo.line_length);
+        printf("osd0_fixInfo.mmio_len=%d\n", osd0_fixInfo.mmio_len);
+        printf("osd0_fixInfo.smem_len=%d\n", osd0_fixInfo.smem_len);
+        printf("osd0_fixInfo.smem_start=0x%lx\n", osd0_fixInfo.smem_start);
+        printf("osd0_fixInfo.type=%d\n", osd0_fixInfo.type);
+        printf("osd0_fixInfo.type_aux=%d\n", osd0_fixInfo.type_aux);
+        printf("osd0_fixInfo.visual=%d\n", osd0_fixInfo.visual);
+        printf("osd0_fixInfo.xpanstep=%d\n", osd0_fixInfo.xpanstep);
+        printf("osd0_fixInfo.ypanstep=%d\n", osd0_fixInfo.ypanstep);
+        printf("osd0_fixInfo.ywrapstep=%d\n\n", osd0_fixInfo.ywrapstep);
+    }
+
+    // Get Existing var_screeninfo for osd0 window
+    if (ioctl(osd0_fd, FBIOGET_VSCREENINFO, &osd0_varInfo) < 0)
+    {
+        printf("\nFailed FBIOGET_VSCREENINFO");
+        return false;
+    }
+    else
+    {
+        printf("osd0_varInfo.xres=%d\n", osd0_varInfo.xres);
+        printf("osd0_varInfo.yres=%d\n", osd0_varInfo.yres);
+        printf("osd0_varInfo.xres_virtual=%d\n", osd0_varInfo.xres_virtual);
+        printf("osd0_varInfo.yres_virtual=%d\n", osd0_varInfo.yres_virtual);
+        printf("osd0_varInfo.xoffset=%d\n", osd0_varInfo.xoffset);
+        printf("osd0_varInfo.yoffset=%d\n", osd0_varInfo.yoffset);
+        printf("osd0_varInfo.accel_flags=%d\n", osd0_varInfo.accel_flags);
+        printf("osd0_varInfo.activate=%d\n", osd0_varInfo.activate);
+        printf("osd0_varInfo.bits_per_pixel=%d\n", osd0_varInfo.bits_per_pixel);
+        printf("osd0_varInfo.grayscale=%d\n", osd0_varInfo.grayscale);
+        printf("osd0_varInfo.height=%d\n", osd0_varInfo.height);
+        printf("osd0_varInfo.hsync_len=%d\n", osd0_varInfo.hsync_len);
+        printf("osd0_varInfo.left_margin=%d\n", osd0_varInfo.left_margin);
+        printf("osd0_varInfo.lower_margin=%d\n", osd0_varInfo.lower_margin);
+        printf("osd0_varInfo.nonstd=%d\n", osd0_varInfo.nonstd);
+        printf("osd0_varInfo.pixclock=%d\n", osd0_varInfo.pixclock);
+        printf("osd0_varInfo.right_margin=%d\n", osd0_varInfo.right_margin);
+        printf("osd0_varInfo.rotate=%d\n", osd0_varInfo.rotate);
+        printf("osd0_varInfo.sync=%d\n", osd0_varInfo.sync);
+        printf("osd0_varInfo.upper_margin=%d\n", osd0_varInfo.upper_margin);
+        printf("osd0_varInfo.vmode=%d\n", osd0_varInfo.vmode);
+        printf("osd0_varInfo.vsync_len=%d\n", osd0_varInfo.vsync_len);
+        printf("osd0_varInfo.width=%d\n", osd0_varInfo.width);
+        printf("osd0_varInfo.xoffset=%d\n", osd0_varInfo.xoffset);
+        printf("osd0_varInfo.xres=%d\n", osd0_varInfo.xres);
+        printf("osd0_varInfo.xres_virtual=%d\n", osd0_varInfo.xres_virtual);
+        printf("osd0_varInfo.yoffset=%d\n", osd0_varInfo.yoffset);
+        printf("osd0_varInfo.yres=%d\n", osd0_varInfo.yres);
+        printf("osd0_varInfo.yres_virtual=%d\n\n", osd0_varInfo.yres_virtual);
+    }
+
+    // Modify the resolution and bpp as required
+    osd0_varInfo.xres = 480;
+    osd0_varInfo.yres = 640;
+    osd0_varInfo.bits_per_pixel = 16;
+    osd0_varInfo.vmode = FB_VMODE_NONINTERLACED;
+    osd0_varInfo.xres_virtual = 480;
+    // Change the virtual Y-resolution for buffer flipping (2 buffers)
+    osd0_varInfo.yres_virtual = osd0_varInfo.yres * 2;
+    osd0_varInfo.nonstd = 0;
+
+    // Set osd1 window format
+    if (ioctl(osd0_fd, FBIOPUT_VSCREENINFO, &osd0_varInfo) < 0)
+    {
+        printf("\nFailed FBIOPUT_VSCREENINFO for osd1");
+        return false;
+    }
+
+    // Set window position
+    pos.xpos = 0;
+    pos.ypos = 0;
+
+    if (ioctl(osd0_fd, FBIO_SETPOSX, &pos.xpos) < 0)
+    {
+        printf("\nFailed osd0 FBIO_SETPOSX\n\n");
+        return false;
+    }
+    if (ioctl(osd0_fd, FBIO_SETPOSY, &pos.ypos) < 0)
+    {
+        printf("\nFailed osd0 FBIO_SETPOSY\n\n");
+        return false;
+    }
+
+    // Enable the window
+    if (ioctl(osd0_fd, FBIOBLANK, 0))
+    {
+        printf("Error enabling OSD0\n");
+        return false;
+    }
+
+    return true;
+}
+
 // blend window control
 bool QV4l2::open_osd1_device()
 {
@@ -1081,6 +1204,8 @@ void QV4l2Thread::run()
     pV4l2->open_capture_device();
     pV4l2->init_capture_device();
     pV4l2->init_capture_mmap();
+    pV4l2->open_osd0_device();
+    pV4l2->init_osd0_device();
     pV4l2->open_osd1_device();
     pV4l2->init_osd1_device();
     pV4l2->init_osd1_mmap();

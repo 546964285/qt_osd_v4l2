@@ -41,7 +41,8 @@ public:
     bool open_osd1_device();
     bool init_osd1_device();
     bool init_osd1_mmap();
-
+    bool open_osd0_device();
+    bool init_osd0_device();
     bool start_loop();
     int stop_capture(int vid_win);
     void * get_display_buffer(int vid_win);
