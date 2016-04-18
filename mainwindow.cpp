@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //this->setWindowOpacity(0);
 
     v4l2thread.start();
+    hbuttonthread.start();
     std::cout << "thread 1 running" << std::endl;
 }
 

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "qv4l2.h"
+#include "qhbutton.h"
 
 namespace Ui {
     class MainWindow;
@@ -25,6 +26,7 @@ private:
     void mouseReleaseEvent(QMouseEvent *event);
 
     QV4l2Thread v4l2thread;
+    QHButtonThread hbuttonthread;
 
 signals:
 
