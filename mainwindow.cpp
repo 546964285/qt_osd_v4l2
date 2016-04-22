@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label->setText(tr(""));
 
-    //QObject::connect(ui->pushButton, SIGNAclicked(),)
+    ui->pushButton->setShortcut(Qt::Key_Enter);
+    ui->pushButton->setShortcut(Qt::Key_Return);
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
@@ -72,7 +73,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    if(event->key() == Qt::Key_Enter)
+    if(event->key() == Qt::Key_Return)
     {
         printf("opps\n");
         ui->pushButton->click();
