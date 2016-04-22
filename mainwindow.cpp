@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QMouseEvent>
+#include <QKeyEvent>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -25,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->label->setText(tr(""));
+
+    //QObject::connect(ui->pushButton, SIGNAclicked(),)
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
@@ -66,3 +69,18 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     press = false;
 }
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Enter)
+    {
+        printf("opps\n");
+        ui->pushButton->click();
+    }
+    printf("I am here!\n");
+}
+
+//void MainWindow::raising_value()
+//{
+//    ui->progressBar->setValue(90);
+//}

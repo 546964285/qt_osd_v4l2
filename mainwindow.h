@@ -23,13 +23,14 @@ private:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
     QV4l2Thread v4l2thread;
 
 signals:
 
 public slots:
-
+//    void raising_value();
 };
 
 #endif // MAINWINDOW_H
