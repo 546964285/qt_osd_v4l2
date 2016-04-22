@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label->setText(tr(""));
 
-    ui->pushButton->setShortcut(Qt::Key_Enter);
+//    ui->pushButton->setShortcut(Qt::Key_Enter);
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
@@ -74,11 +74,22 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_Return)
     {
-        printf("opps\n");
-        ui->pushButton->click();
+        printf("opps 1\n");
+        ui->pushButton->setDown(true);
     }
-    printf("I am here!\n");
+    printf("I am here 1!\n");
 }
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Return)
+    {
+        printf("opps 2\n");
+        ui->pushButton->setDown(false);
+    }
+    printf("I am here 2!\n");
+}
+
 
 //void MainWindow::raising_value()
 //{
