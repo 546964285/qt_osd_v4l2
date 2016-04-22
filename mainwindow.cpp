@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label->setText(tr(""));
 
     ui->pushButton->setShortcut(Qt::Key_Enter);
-    ui->pushButton->setShortcut(Qt::Key_Return);
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
