@@ -1,0 +1,17 @@
+这是一个修改后的自定义按键插件，可以给出pressed和released两种事件的键值
+使用步骤
+
+step 1
+将编译出的 libsbox4x4.so复制到
+/usr/local/Trolltech/QtEmbedded-4.7.0-arm/plugins/kbddrivers
+目录下（没有目录则创建）
+然后，增加一个QWS_KEYBOARD环境变量： 
+export QWS_KEYBOARD=sbox4x4:/dev/button
+
+step 2
+还需要加载gpio读取的驱动
+insmod gpio_drv.ko
+
+step 3
+如果应用程序名是xxx，那么这样运行
+./xxx -qws -nomouse -display "transformed:Rot270"
