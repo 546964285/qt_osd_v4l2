@@ -72,22 +72,23 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    if(event->key() == Qt::Key_Return)
+    if(event->key() == Qt::Key_Enter)
     {
-        printf("opps 1\n");
+        //printf("opps 1\n");
+        ui->pushButton->click();
         ui->pushButton->setDown(true);
     }
-    printf("I am here 1!\n");
+    //printf("I am here 1!\n");
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
-    if(event->key() == Qt::Key_Return)
+    if(event->key() == Qt::Key_Enter)
     {
-        printf("opps 2\n");
+        //printf("opps 2\n");
         ui->pushButton->setDown(false);
     }
-    printf("I am here 2!\n");
+    //printf("I am here 2!\n");
 }
 
 
