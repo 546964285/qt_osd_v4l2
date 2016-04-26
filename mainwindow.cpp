@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QtGui>
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <iostream>
@@ -39,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
+
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 }
 
 MainWindow::~MainWindow()
@@ -46,6 +49,11 @@ MainWindow::~MainWindow()
 
 }
 
+void MainWindow::call_testdialog()
+{
+    TestDialog dialog(this);
+    dialog.exec();
+}
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
@@ -96,3 +104,21 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 //{
 //    ui->progressBar->setValue(90);
 //}
+
+TestDialog::TestDialog(QWidget *parent)
+    : QDialog(parent)
+{
+    setGeometry(QRect(400,100,480,180));
+
+    button = new QPushButton("Quit");
+    button->setEnabled(true);
+    button->show();
+
+    QVBoxLayout *VLayout = new QVBoxLayout;
+    VLayout->addWidget(button);
+
+    setLayout(VLayout);
+
+    connect(button, SIGNAL(clicked()), this, SLOT(close()));
+}
+

@@ -69,7 +69,8 @@ void Sbox4x4Handler::kbdReadyRead()
     {
         this->processKeyEvent(unicode, keycode_pre, modifiers, 0, false);
     }
-    else
+    // else
+    if(keycode != 0 && keycode_pre == 0)
     {
         this->processKeyEvent(unicode, keycode, modifiers, 1, false);
     }

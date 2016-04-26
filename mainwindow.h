@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QDialog>
 #include "qv4l2.h"
 
 namespace Ui {
@@ -32,6 +33,22 @@ signals:
 
 public slots:
 //    void raising_value();
+
+    void call_testdialog();
+
 };
+
+class TestDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    TestDialog(QWidget *parent = 0);
+
+private:
+
+    QPushButton *button;
+};
+
 
 #endif // MAINWINDOW_H
