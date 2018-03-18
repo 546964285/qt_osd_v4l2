@@ -637,6 +637,7 @@ bool Qv4l2::init_mmap()
         g_YUVBuf[i] = mmap(NULL, v4l2Buf.length, PROT_READ | PROT_WRITE,
                                   MAP_SHARED, m_hDev, v4l2Buf.m.offset);
 
+//        printf("g_imgBufSize=%d\n",g_imgBufSize);
         if(g_YUVBuf[i] == MAP_FAILED)
         {
             ShowErrMsg("mmap模式下系统空间内存映射到用户空间发生错误!");

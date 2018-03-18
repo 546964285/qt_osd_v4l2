@@ -75,8 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateRTC_timer,SIGNAL(timeout()),this,SLOT(UpdateRTC()));
     updateRTC_timer->start();
 
-    ui->label->move(20,20);
-    ui->label->resize(384, 384);
+//    ui->label->move(20,20);
+//    ui->label->resize(384, 384);
 
     capt_btn=new Button(this);
     capt_btn->setButtonPicture(QPixmap(":/images/capt1.png"));
