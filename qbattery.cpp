@@ -6,6 +6,7 @@ QBattery::QBattery(QWidget *parent) :
 
 //    m_bReverse=false;
     m_value=0;
+
 //    updateTimer=new QTimer(this);
 //    updateTimer->setInterval(5);
 //    connect(updateTimer,SIGNAL(timeout()),this,SLOT(UpdateGraph()));
@@ -18,6 +19,7 @@ void QBattery::paintEvent(QPaintEvent *e)
     painter.setRenderHint(QPainter::Antialiasing);
     drawFrame(&painter);
     drawBattery(&painter);
+    drawNum(&painter);
     painter.end();
 }
 void QBattery::drawFrame(QPainter *painter)
@@ -59,7 +61,7 @@ void QBattery::drawFrame(QPainter *painter)
     painter->setBrush(QBrush(Qt::white, Qt::SolidPattern));
     painter->drawRect(headRect);
 
-
+//    numSpin-setGeometry(QRect(batteryWidth/2,height()/2));
     painter->restore();
 }
 
@@ -105,6 +107,19 @@ void QBattery::drawBattery(QPainter *painter)
 
 }
 
+void QBattery::drawNum(QPainter *painter)
+{
+    painter->save();
+    QFont font("Arial",10,QFont::Bold,false);
+    int side = qMin(width(), height());
+    painter->setPen(QPen(Qt::white,side/10));
+    painter->setFont(font);
+    painter->drawText(m_batteryRect, Qt::AlignHCenter|Qt::AlignVCenter, tr("%1%").arg(m_value));
+    //painter->drawText(QPoint(width()*7/20, height()/2+5),tr("%1%").arg(m_value));
+    //QLabel *label = new QLabel("<h2><i>Hello</i> ""<font color=red>Qt!</font></h2>");
+    painter->restore();
+}
+
 //void QBattery::UpdateGraph()
 //{
 //    if(m_bReverse)
@@ -127,7 +142,7 @@ void QBattery::drawBattery(QPainter *painter)
 //    update();
 //}
 
-void QBattery::setValue(qreal value)
+void QBattery::setValue(int value)
 {
     if(value<0 || value>100)
     {

@@ -10,10 +10,10 @@ class QBattery : public QWidget
 Q_OBJECT
 public:
     explicit QBattery(QWidget *parent = 0);
-    qreal   m_value;
+    int   m_value;
 
 public Q_SLOTS:
-    void setValue(qreal value);
+    void setValue(int value);
     void addValue();
     void subValue();
 
@@ -28,8 +28,8 @@ protected:
 private:
     void drawFrame(QPainter* painter);
     void drawBattery(QPainter* painter);
+    void drawNum(QPainter* painter);
 private:
-//    QLabel * numSpin;
 
 //    QTimer* updateTimer;
     //bool    m_bReverse;
@@ -37,12 +37,12 @@ private:
 
 //    qreal   m_currentValue;
     QRectF  m_batteryRect;
-
+	
 private Q_SLOTS:
 //    void UpdateGraph();
 
 Q_SIGNALS:
-    void valueChanged(qreal value);
+    void valueChanged(int value);
 
 };
 

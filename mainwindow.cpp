@@ -41,7 +41,10 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->pushButton->setFocusPolicy(Qt::NoFocus);
 //    ui->pushButton_2->setFocusPolicy(Qt::NoFocus);
 
+    connect(ui->battery, SIGNAL(valueChanged(int)), ui->progressBar, SLOT(setValue(int)));
+
     ui->battery->setValue(50);
+
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
