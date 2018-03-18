@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+//#include "GxPublic.h"
+#include <QTimer>
 #include <QtGui>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -11,10 +13,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     // pc版本运行位置
-    //setGeometry(QRect(100,100,640,480));
+    setGeometry(QRect(100,100,640,480));
 
     // 隐藏标题栏
-    setWindowFlags(Qt::FramelessWindowHint);
+    //setWindowFlags(Qt::FramelessWindowHint);
 
     // 设置窗体背景
     setAutoFillBackground(true);
@@ -34,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    setPalette(pal);
 
     ui->setupUi(this);
+
+    //m_pic = (QGxImage*)ui->label;
 
     ui->label->setText(tr(""));
 
@@ -71,13 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updateRTC_timer,SIGNAL(timeout()),this,SLOT(UpdateRTC()));
     updateRTC_timer->start();
 
-//    ui->label->move(48,48);
-    //ui->label->resize(640, 480);
-    //ui->label->resize(400, 400);
-//    ui->label->resize(384, 384);
-
-//    ui->label->setMask(QRect(0,0,384,384));
-    //this->setWindowOpacity(0);
+    ui->label->move(20,20);
+    ui->label->resize(384, 384);
 
     capt_btn=new Button(this);
     capt_btn->setButtonPicture(QPixmap(":/images/capt1.png"));
@@ -89,20 +88,34 @@ MainWindow::MainWindow(QWidget *parent) :
     capt_btn->set_X_Y_width_height(470,170,71,71);
 
 
-    v4l2thread.start();
-    std::cout << "thread 1 running" << std::endl;
-    //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
-//    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
-//    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
+    ui->label->OpenV4l2("/dev/video0");
+
+//    ui->btn_save->setVisible(false);
+
+    QTimer *pTimer = new QTimer();
+
+    connect(pTimer, SIGNAL(timeout()), this, SLOT(OnTimer()));
+    pTimer->start(1000);
 
     connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
 
     connect(this, SIGNAL(call_capture()), this, SLOT(capture()));
 }
 
+void MainWindow::OnTimer()
+{
+//    if(g_IsLineChanged)
+//    {
+//        ui->btn_save->setVisible(true);
+//    }
+
+    setWindowTitle(tr("%1 fps").arg(ui->label->GetFps()));
+}
+
 MainWindow::~MainWindow()
 {
-
+    //ui->label->MyDestroyed();
+    delete ui;
 }
 
 void MainWindow::call_testdialog()
@@ -165,6 +178,69 @@ void MainWindow::capture()
     qDebug() <<"in slot capture()" << endl;
     capt_btn->setIcon(QIcon(*capt_btn->enterPicture));
 }
+
+//void MainWindow::on_pushButton_clicked()
+//{
+//    //ui->label->InitImage();
+//}
+
+//void MainWindow::on_btn_save_clicked()
+//{
+//    ui->btn_save->setVisible(false);
+//    g_IsLineChanged = false;
+//    ui->label->SaveRect();
+
+//}
+
+//void MainWindow::on_pushButton_2_clicked()
+//{
+////    if(ui->label->OpenV4l2("/dev/video0"))
+////    {
+////        ui->list->addItem(tr("打开v4l2设备成功!"));
+////    }
+//}
+
+//void MainWindow::customEvent(QEvent *e)
+//{
+//    if(e->type() != GxMsgEvent)
+//    {
+//        return;
+//    }
+
+//    QGxMsgData *pData = (QGxMsgData*)((QChildEvent*)e)->child();
+
+//    switch(pData->nType)
+//    {
+//    case 0:
+//    {
+////        ui->list->addItem(pData->strMsg);
+////        break;
+//    }
+//    case 2:
+//    {
+//       // ui->progressBar->setMaximum(pData->nVal);
+//        //totalBytes = 0;
+//        break;
+//    }
+//    case 3:
+//    {
+////        totalBytes += pData->nVal;
+////        m_totalBytes += pData->nVal;
+////        ui->progressBar->setValue(totalBytes);
+//        break;
+//    }
+//    default:
+//    {
+//        break;
+//    }
+//    }
+//}
+
+//void MainWindow::on_pushButton_3_clicked()
+//{
+//    //unsigned char *p = ui->label->getBuf();
+//}
+
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
@@ -281,7 +357,7 @@ TestDialog::TestDialog(QWidget *parent)
     : QDialog(parent)
 {
     //setGeometry(QRect(400,100,480,180));
-    setGeometry(QRect(0,0,640,480));
+    setGeometry(QRect(100,100,640,480));
 
     button = new QPushButton("Quit");
     button->setEnabled(true);
