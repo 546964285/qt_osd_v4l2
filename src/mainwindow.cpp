@@ -93,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
     capt_btn->set_X_Y_width_height(470,170,71,71);
 
 
+    v4l2thread.capture_lock=false;
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
@@ -156,6 +157,7 @@ void MainWindow::capture_ok()
     this->msecSleep(1000);
 
     capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
+    v4l2thread.capture_lock=false;
 }
 
 void MainWindow::capture_fail()
@@ -166,6 +168,7 @@ void MainWindow::capture_fail()
     this->msecSleep(1000);
 
     capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
+    v4l2thread.capture_lock=false;
 }
 
 
@@ -231,7 +234,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Z:
         //capt_btn->keyPressEvent(event);
         //capt_btn->setIcon(QIcon(*capt_btn->enterPicture));
-        emit call_capture();
+        if(v4l2thread.capture_lock==false)
+        {
+            emit call_capture();
+        }
         break;
 
     default:
