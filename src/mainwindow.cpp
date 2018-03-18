@@ -79,14 +79,13 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
-    v4l2thread.start();
+    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
+
+    //v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 //    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
 //    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
-    connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
-
-    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
 }
 
 MainWindow::~MainWindow()
@@ -204,7 +203,6 @@ void MainWindow::UpdateRTC()
 TestDialog::TestDialog(QWidget *parent)
     : QDialog(parent)
 {
-    MainWindow * ptr = (MainWindow *)parentWidget();
     //setGeometry(QRect(400,100,480,180));
     setGeometry(QRect(0,0,640,480));
 
@@ -217,7 +215,6 @@ TestDialog::TestDialog(QWidget *parent)
 
     setLayout(VLayout);
 
-    connect(button,SIGNAL(clicked()),&(ptr->v4l2thread),SLOT(trans_osd1()));
     connect(button, SIGNAL(clicked()), this, SLOT(close()));
 }
 

@@ -84,7 +84,7 @@
   <customwidget>
    <class>QBattery</class>
    <extends>QWidget</extends>
-   <header>qbattery.h</header>
+   <header location="global">qbattery.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
