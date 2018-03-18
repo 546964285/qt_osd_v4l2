@@ -14,23 +14,21 @@ MP4FileHandle CreateMP4File(const char *pFileName,int width,int height,int timeS
     if(pFileName == NULL)  
     {  
         return false;  
-    }  
-    // create mp4 file  
-    MP4FileHandle hMp4file = MP4Create(pFileName,0);  
+    }      
+    MP4FileHandle hMp4file = MP4Create(pFileName,0);  // create mp4 file
     if (hMp4file == MP4_INVALID_FILE_HANDLE)  
     {  
         printf("ERROR:Open file fialed.\n");  
         return false;  
     }  
-    m_nWidth = width;  
-    m_nHeight = height;  
-    m_nTimeScale = 90000;  
-    m_nFrameRate = 25;  
+    m_nWidth        =   width;
+    m_nHeight       =   height;
+    m_nTimeScale    =   90000;
+    m_nFrameRate    =   25;
     MP4SetTimeScale(hMp4file, m_nTimeScale);  
     return hMp4file;
 }  
-  
-  
+   
 int WriteH264Data(MP4FileHandle hMp4File,const unsigned char* pData,int size)  
 {  
     printf("call WriteH264Data()\n");
@@ -52,16 +50,16 @@ int WriteH264Data(MP4FileHandle hMp4File,const unsigned char* pData,int size)
         {  
             printf("NALU type is sps\n");
             // 添加h264 track      
-            m_videoId = MP4AddH264VideoTrack  
-                (hMp4File,   
-                m_nTimeScale,   
-                m_nTimeScale / m_nFrameRate,   
-                m_nWidth,     // width  
-                m_nHeight,    // height  
-                nalu.data[1], // sps[1] AVCProfileIndication  
-                nalu.data[2], // sps[2] profile_compat  
-                nalu.data[3], // sps[3] AVCLevelIndication  
-                3);           // 4 bytes length before each NAL unit  
+            m_videoId = MP4AddH264VideoTrack(
+                                             hMp4File,
+                                             m_nTimeScale,
+                                             m_nTimeScale / m_nFrameRate,
+                                             m_nWidth,     // width
+                                             m_nHeight,    // height
+                                             nalu.data[1], // sps[1] AVCProfileIndication
+                                             nalu.data[2], // sps[2] profile_compat
+                                             nalu.data[3], // sps[3] AVCLevelIndication
+                                             3);           // 4 bytes length before each NAL unit
             if (m_videoId == MP4_INVALID_TRACK_ID)  
             {  
                 printf("add video track failed.\n");  
@@ -108,21 +106,13 @@ int ReadOneNaluFromBuf(const unsigned char *buffer,unsigned int nBufferSize,unsi
     unsigned int i = offSet;  
     while(i<nBufferSize)  
     {  
-        if(buffer[i++] == 0x00 &&  
-            buffer[i++] == 0x00 &&  
-            buffer[i++] == 0x00 &&  
-            buffer[i++] == 0x01  
-            )  // 确认找到NAL头
+        if( buffer[i++] == 0x00 &&  buffer[i++] == 0x00 &&  buffer[i++] == 0x00 &&  buffer[i++] == 0x01  )  // 确认找到NAL头
         {  
             printf("found NAL header at i = %d\n",i);
             unsigned int pos = i;  
             while (pos<nBufferSize)  
             {  
-                if(buffer[pos++] == 0x00 &&  
-                    buffer[pos++] == 0x00 &&  
-                    buffer[pos++] == 0x00 &&  
-                    buffer[pos++] == 0x01  
-                    )  
+                if( buffer[pos++] == 0x00 &&  buffer[pos++] == 0x00 &&  buffer[pos++] == 0x00 &&  buffer[pos++] == 0x01  )
                 {  
                     break;   //确认找到下一个NAL头
                 }  
@@ -138,8 +128,7 @@ int ReadOneNaluFromBuf(const unsigned char *buffer,unsigned int nBufferSize,unsi
                 printf("@3found NALU size = %d\n",pnalu->size);
             }  
             // 两个NAL头之间就是nalu的大小size
-            
-            
+                        
             pnalu->type = buffer[i]&0x1f;
             printf("found NALU type = %d\n",pnalu->type);
             printf("pnalu->type = %d\n",pnalu->type);
@@ -202,11 +191,7 @@ bool WriteH264File(const char* pFile264,const char* pFileMp4)
         int writelen = 0;  
         for(i = readlen-1; i>=0; i--)  
         {  
-                if(buffer[i--] == 0x01 &&  
-                    buffer[i--] == 0x00 &&  
-                    buffer[i--] == 0x00 &&  
-                    buffer[i--] == 0x00  
-                    )  
+                if( buffer[i--] == 0x01 &&  buffer[i--] == 0x00 &&  buffer[i--] == 0x00 &&  buffer[i--] == 0x00  )
                 {  
                     writelen = i+5;  
                     break;  

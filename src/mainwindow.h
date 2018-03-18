@@ -10,6 +10,15 @@
 #include "Button.h"
 #include "mainmenu.h"
 
+#include <sys/types.h>//以下几行是为了张冰冰调用驱动所用
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <stdlib.h>
+
+#include "dlgf1.h"
+
 namespace Ui
 {
     class MainWindow;
@@ -36,6 +45,8 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    int GetI2CValue();
+
     QDateTime current_time;
     QString current_time_str;
     QTimer* updateRTC_timer;
@@ -43,7 +54,7 @@ private:
     Button * capt_btn;
     Button * record_btn;
 
-     int GetI2CValue();
+    DlgF1 dlgf1;//定义第一级对话框对象，用于工作时候显示
 
 signals:
 
@@ -53,6 +64,7 @@ public slots:
     void capture_ok();
     void capture_fail();
     void capture();
+    void SlotShowMainWindow();
 
 private Q_SLOTS:
     void UpdateRTC();
@@ -61,6 +73,8 @@ Q_SIGNALS:
     void call_dialog();
     void call_capture();
     void call_rcdstarstop();
+    void SHideOsd1();
+    void SShowOsd1();
 };
 
 

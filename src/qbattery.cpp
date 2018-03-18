@@ -2,13 +2,11 @@
 
 QBattery::QBattery(QWidget *parent) :QWidget(parent)
 {
-
-//    m_bReverse=false;
+    //m_bReverse=false;
     m_value=0;
-
-//    updateTimer=new QTimer(this);
-//    updateTimer->setInterval(5);
-//    connect(updateTimer,SIGNAL(timeout()),this,SLOT(UpdateGraph()));
+    //updateTimer=new QTimer(this);
+    //updateTimer->setInterval(5);
+    //connect(updateTimer,SIGNAL(timeout()),this,SLOT(UpdateGraph()));
 }
 
 void QBattery::paintEvent(QPaintEvent *e)

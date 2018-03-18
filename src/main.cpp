@@ -7,8 +7,10 @@ int main(int argc, char *argv[])    // 支持命令行参数
     QApplication app(argc, argv);   // 命令行参数传递给对象appa, 构造函数需要
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+
     MainWindow mainWin;
     mainWin.show();
+
     return app.exec(); // 处理事件和回收内存
 }
 

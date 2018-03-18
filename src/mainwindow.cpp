@@ -7,28 +7,28 @@
 #include "qbattery.h"
 #include "backplay.h"
 
-QObject * dstWnd;
+QObject * dstWnd;//屏蔽掉好像也没事
 
 MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWindow)
 { 
+    dlgf1.setModal(false);//false非模态/true模态//产生非模态对话框
+    dlgf1.hide();
+
     setWindowFlags(Qt::FramelessWindowHint);// 隐藏标题栏
     setAutoFillBackground(true);// 设置窗体背景
 
     QPalette  palette;
-    //palette.setColor(QPalette::Background, QColor(0x00,0xff,0x00,0x00));//设置背景为透明
-    palette.setColor(QPalette::Background, QColor(53,73,123));//设置背景有颜色
+    palette.setColor(QPalette::Background, QColor(53,73,123));//设置背景有颜色  QColor(0x00,0xff,0x00,0x00)透明
     setPalette(palette);
 
     ui->setupUi(this);
     ui->label->setText(tr(""));//清除控件文字内容
-    dstWnd = ui->label;
+    dstWnd = ui->label;//屏蔽掉好像也没事
 
-    ui->battery->setValue(50);//电池电量设置
+    ui->battery->setValue(70);//电池电量设置
 
-    current_time = QDateTime::currentDateTime();
+    current_time = QDateTime::currentDateTime();//显示当前时间
     current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
-    qDebug() << current_time_str << "-=-=-=-=-=-=-=-";
-
     QFont font("Arial",12,QFont::Bold,false);
     ui->label_2->setFont(font);
     QPalette pe;
@@ -40,7 +40,6 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWind
     updateRTC_timer->setInterval(50);
     connect(updateRTC_timer,SIGNAL(timeout()),this,SLOT(UpdateRTC()));
     updateRTC_timer->start();
-
 
     capt_btn=new Button(this);
     capt_btn->setButtonPicture(QPixmap(":/images/capt1.png"));
@@ -63,19 +62,27 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWind
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
 
-    connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
-    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
+    //connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
+    // connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
     connect(this, SIGNAL(call_capture()), this, SLOT(capture()));
     connect(this, SIGNAL(call_capture()), &v4l2thread, SLOT(video0_capture()));
     connect(&v4l2thread,SIGNAL(capture_ok()),this,SLOT(capture_ok()));
     connect(&v4l2thread,SIGNAL(capture_fail()),this,SLOT(capture_fail()));
     connect(this, SIGNAL(call_rcdstarstop()), this, SLOT(rcdstarstop()));
     connect(this, SIGNAL(call_rcdstarstop()), &v4l2thread, SLOT(rcdstarstop()));
+
+    connect(this, SIGNAL(SShowOsd1()), &v4l2thread, SLOT(trans_osd1()));//显示Osd1视频窗口 信号
+    connect(this, SIGNAL(SHideOsd1()), &v4l2thread, SLOT(blank_osd1()));//隐藏Osd1视频窗口 信号
+    connect(&dlgf1, SIGNAL(SShowMainWindow()), this, SLOT(SlotShowMainWindow()));
 }
 
 MainWindow::~MainWindow()
 {
+}
 
+void MainWindow::SlotShowMainWindow()//显示主窗口对话框
+{
+    show();
 }
 
 void MainWindow::rcdstarstop()//视频录制开始停止控制
@@ -103,27 +110,6 @@ void MainWindow::call_testdialog()
     mainmenu.exec();
 }
 
-//void MainWindow::capture_ok()
-//{
-//    qDebug() <<"in slot capture_ok()" << endl;
-
-//    QTime delayTime = QTime::currentTime().addMSecs(1000);  //在当前时间上增加1S
-//    while( QTime::currentTime() < delayTime)
-//        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-
-//    capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
-//}
-
-//void MainWindow::capture_fail()
-//{
-//    qDebug() <<"in slot capture_fail()" << endl;
-
-//    QTime delayTime1 = QTime::currentTime().addMSecs(1000);  //在当前时间上增加1S
-//    while( QTime::currentTime() < delayTime1)
-//        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
-//    capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
-//}
-
 void MainWindow::msecSleep(int msec)
 {
     QTime dieTime = QTime::currentTime().addMSecs(msec);
@@ -136,7 +122,6 @@ void MainWindow::msecSleep(int msec)
 void MainWindow::capture_ok()
 {
     qDebug() <<"in slot capture_ok()" << endl;
-
     //    SleeperThread::msleep(1000);
     this->msecSleep(1000);
     capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
@@ -152,7 +137,6 @@ void MainWindow::capture_fail()
     capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
     v4l2thread.capture_lock=false;
 }
-
 
 void MainWindow::capture()
 {
@@ -195,22 +179,17 @@ int MainWindow::GetI2CValue()
     else{
              printf("APP open %s success!\n",i2c_device);
     }
-    buffer[0] = 13;
+    buffer[0] = 13;//13为电量
     printf("buffer0 is-------------------- %d \n",buffer[0]);
-    //buffer[0] = atoi(argv2[1]);
-    //printf("buffer0 is-------------------- %d \n",buffer[0]);
     ret = read(fd2,buffer,2);
     if(ret<0)
     printf("i2c read failed!\n");
-    else{
-           printf("i2c read success Buffer[0] is %d!\n",buffer[0]);
-           printf("i2c read success Buffer[1] is %d!\n",buffer[1]);
-           printf("i2c read success reg 0x09 data is %d!\n",buffer[1]*256+buffer[0]);
-    }
+    else
+    printf("i2c read success!\n");
 
-    printf("i2c read failed Buffer[0] is %d!\n",buffer[0]);
-    printf("i2c read failed Buffer[1] is %d!\n",buffer[1]);
-    printf("i2c read failed reg 0x09 data is %d!\n",buffer[1]*256+buffer[0]);
+    printf("Buffer[0] is %d!\n",buffer[0]);
+    printf("Buffer[1] is %d!\n",buffer[1]);
+    printf("i2c read reg 0x09 data is %d!\n",buffer[1]*256+buffer[0]);
 
     //close(fd2);
     ret=buffer[1]*256+buffer[0];
@@ -219,29 +198,40 @@ int MainWindow::GetI2CValue()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    int keyValue;
-    keyValue=event->key();
-    qDebug() <<"pressed keyValue= "<< keyValue << endl;
-
-    switch (keyValue)
+    qDebug() << "pressed key is" << QKeySequence(event->modifiers() + event->key());
+    if(event->isAutoRepeat()) return;// 按键重复时不做处理
+    switch (event->key())
     {
-        case Qt::Key_Enter:
         case Qt::Key_Return:
         {
-            //ui->battery->addValue();
-
             ui->battery->setValue(GetI2CValue());
-            qDebug() <<"pressed --Key_Return";
         }
         break;
-        case Qt::Key_A:
+        case Qt::Key_M:
         {
-            ui->battery->subValue();
+            emit SHideOsd1();//隐藏Osd1视频窗口 信号
+            dlgf1.show();    //菜单对话框显示
         }
         break;
+        case Qt::Key_Left:
+        {
 
-        case Qt::Key_B:
-        emit call_dialog();
+        }
+        break;
+        case Qt::Key_Right:
+        {
+
+        }
+        break;
+        case Qt::Key_T:
+        {
+
+        }
+        break;
+        case Qt::Key_P:
+        {
+
+        }
         break;
 
         case Qt::Key_Z:
@@ -267,7 +257,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
     int keyValue;
     keyValue=event->key();
-
     qDebug() << "released keyValue= " << keyValue << endl;
 
     switch (keyValue)

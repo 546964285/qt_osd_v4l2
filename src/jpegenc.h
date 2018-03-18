@@ -36,7 +36,7 @@
 #include <ti/sdo/dmai/BufferGfx.h>
 #include <ti/sdo/dmai/ce/Ienc1.h>
 
-int readFrame(Buffer_Handle hBuf,void * ptr);
-void csayhello(char *str);
+int   readFrame(Buffer_Handle hBuf,void * ptr);
+void  csayhello(char *str);
 
 #endif

@@ -17,7 +17,7 @@
    <widget class="QGxImage" name="label">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>48</x>
       <y>48</y>
       <width>384</width>
       <height>384</height>
@@ -77,15 +77,15 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QGxImage</class>
-   <extends>QLabel</extends>
-   <header location="global">qgximage.h</header>
-  </customwidget>
-  <customwidget>
    <class>QBattery</class>
    <extends>QWidget</extends>
    <header location="global">qbattery.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QGxImage</class>
+   <extends>QLabel</extends>
+   <header location="global">qgximage.h</header>
   </customwidget>
  </customwidgets>
  <resources>

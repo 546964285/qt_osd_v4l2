@@ -19,5 +19,9 @@
         <file>images/VideoPlayer_48.png</file>
         <file>images/EMail_48.png</file>
         <file>images/settings1.png</file>
+        <file>images/background1.png</file>
+        <file>images/ButtonYellow.png</file>
+        <file>images/StatusBar.png</file>
+        <file>images/Title.png</file>
     </qresource>
 </RCC>

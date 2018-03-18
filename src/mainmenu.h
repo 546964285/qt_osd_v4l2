@@ -9,15 +9,15 @@ class MainMenu : public QDialog
 {
     Q_OBJECT
 
-public:
-    MainMenu(QWidget *parent = 0);
+    public:
+        MainMenu(QWidget *parent = 0);
 
-public slots:
-    void cppSlot(int index);
+    public slots:
+        void cppSlot(int index);
 
-private:
+    private:
 
-    QPushButton *button;
+        QPushButton *button;
 };
 
 #endif // MAINMENU_H
