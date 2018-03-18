@@ -77,7 +77,23 @@ OBJECTS_DIR   = ./
 
 ####### Files
 ###Add src/***.cpp \ and moc_***.cpp \ Dialog by Vincent------(1)
-SOURCES  =  src/dlgf1.cpp\
+SOURCES  =  src/dlgshowdev.cpp \
+            src/dlglanguage.cpp \
+            src/dlgtakepicnum.cpp \
+            src/dlgpicorvid.cpp \
+            src/dlgpicfile.cpp \
+            src/dlgvidfile.cpp \
+            src/dlgshowpic.cpp \
+            src/dlgshowvid.cpp \
+            src/dlgstandby.cpp \
+            src/dlgoff.cpp \
+            src/dlgvidsavetime.cpp \
+            src/dlgtvmode.cpp \
+            src/dlgrecovery.cpp \
+            src/dlgbackground.cpp \
+            src/dlgcolor.cpp \
+            src/dlgtime.cpp \
+            src/dlgf1.cpp\
             src/Button.cpp\
 		    src/main.cpp \
 		    src/mainwindow.cpp \
@@ -88,6 +104,22 @@ SOURCES  =  src/dlgf1.cpp\
 		    src/MP4Encoder.c \
 		    src/mainmenu.cpp \
 		    src/backplay.cpp \
+            moc_dlgshowdev.cpp \
+            moc_dlglanguage.cpp \
+            moc_dlgtakepicnum.cpp \
+            moc_dlgpicorvid.cpp \
+            moc_dlgpicfile.cpp \
+            moc_dlgvidfile.cpp \
+            moc_dlgshowpic.cpp \
+            moc_dlgshowvid.cpp \
+            moc_dlgstandby.cpp \
+            moc_dlgoff.cpp \
+            moc_dlgvidsavetime.cpp \
+            moc_dlgtvmode.cpp \
+            moc_dlgrecovery.cpp \
+            moc_dlgbackground.cpp \
+            moc_dlgcolor.cpp \
+            moc_dlgtime.cpp \
             moc_dlgf1.cpp \
             moc_Button.cpp \
 		    moc_mainwindow.cpp \
@@ -98,7 +130,23 @@ SOURCES  =  src/dlgf1.cpp\
 		    moc_backplay.cpp \
 		    qrc_qt_osd_res.cpp
 #Add ***.o \ and moc_***.o \ Dialog by Vincent------(2)    
-OBJECTS  =  dlgf1.o \
+OBJECTS  =  dlgshowdev.o \
+            dlglanguage.o \
+            dlgtakepicnum.o \
+            dlgpicorvid.o \
+            dlgpicfile.o \
+            dlgvidfile.o \
+            dlgshowpic.o \
+            dlgshowvid.o \
+            dlgstandby.o \
+            dlgoff.o \
+            dlgvidsavetime.o \
+            dlgtvmode.o \
+            dlgrecovery.o \
+            dlgbackground.o \
+            dlgcolor.o \
+            dlgtime.o \
+            dlgf1.o \
             Button.o \
 		    main.o \
 		    mainwindow.o \
@@ -110,6 +158,22 @@ OBJECTS  =  dlgf1.o \
 		    moc_Button.o \
 		    jpegenc.o \
 		    MP4Encoder.o \
+            moc_dlgshowdev.o \
+            moc_dlglanguage.o \
+            moc_dlgtakepicnum.o \
+            moc_dlgpicorvid.o \
+            moc_dlgpicfile.o \
+            moc_dlgvidfile.o \
+            moc_dlgshowpic.o \
+            moc_dlgshowvid.o \
+            moc_dlgstandby.o \
+            moc_dlgoff.o \
+            moc_dlgvidsavetime.o \
+            moc_dlgtvmode.o \
+            moc_dlgrecovery.o \
+            moc_dlgbackground.o \
+            moc_dlgcolor.o \
+            moc_dlgtime.o \
             moc_dlgf1.o \
 		    moc_mainwindow.o \
 		    moc_qbattery.o \
@@ -222,10 +286,10 @@ Makefile: qt_osd_arm.pro  /usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/qws/
 /usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib/libQtCore.prl:
 qmake:  FORCE
 	@$(QMAKE) -o Makefile qt_osd_arm.pro
-#src/***.h  src/***.ui  Add Dialog by Vincent------(3)
+#src/***.h  src/***.cpp  src/***.ui  Add Dialog by Vincent------(3)
 dist: 
 	@$(CHK_DIR_EXISTS) .tmp/qt_osd_arm1.0.0 || $(MKDIR) .tmp/qt_osd_arm1.0.0   
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/Button.h src/mainwindow.h src/dlgf1.h src/qbattery.h src/qgximage.h src/qt.h src/qv4l2.h src/jpegenc.h src/MP4Encoder.h src/mainmenu.h src/backplay.h .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/qt_osd_res.qrc .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/Button.cpp src/main.cpp src/mainwindow.cpp src/dlgf1.cpp src/qbattery.cpp src/qgximage.cpp src/qv4l2.cpp src/jpegenc.c src/MP4Encoder.c src/mainmenu.cpp src/backplay.cpp .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/mainwindow.ui src/dlgf1.ui .tmp/qt_osd_arm1.0.0/ && (cd `dirname .tmp/qt_osd_arm1.0.0` && $(TAR) qt_osd_arm1.0.0.tar qt_osd_arm1.0.0 && $(COMPRESS) qt_osd_arm1.0.0.tar) && $(MOVE) `dirname .tmp/qt_osd_arm1.0.0`/qt_osd_arm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt_osd_arm1.0.0
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/Button.h src/mainwindow.h src/dlgf1.h src/dlgshowdev.h src/dlglanguage.h src/dlgtakepicnum.h src/dlgpicorvid.h src/dlgpicfile.h src/dlgvidfile.h src/dlgshowpic.h src/dlgshowvid.h src/dlgstandby.h src/dlgoff.h src/dlgvidsavetime.h src/dlgtvmode.h src/dlgrecovery.h src/dlgbackground.h src/dlgcolor.h src/dlgtime.h  src/qbattery.h src/qgximage.h src/qt.h src/qv4l2.h src/jpegenc.h src/MP4Encoder.h src/mainmenu.h src/backplay.h .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/qt_osd_res.qrc .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/Button.cpp src/main.cpp src/mainwindow.cpp src/dlgf1.cpp src/dlgshowdev.cpp src/dlglanguage.cpp src/dlgtakepicnum.cpp src/dlgpicorvid.cpp src/dlgpicfile.cpp src/dlgvidfile.cpp src/dlgshowpic.cpp src/dlgshowvid.cpp src/dlgstandby.cpp src/dlgoff.cpp src/dlgvidsavetime.cpp src/dlgtvmode.cpp src/dlgrecovery.cpp src/dlgbackground.cpp src/dlgcolor.cpp src/dlgtime.cpp src/qbattery.cpp src/qgximage.cpp src/qv4l2.cpp src/jpegenc.c src/MP4Encoder.c src/mainmenu.cpp src/backplay.cpp .tmp/qt_osd_arm1.0.0/ && $(COPY_FILE) --parents src/mainwindow.ui src/dlgf1.ui src/dlgshowdev.ui src/dlglanguage.ui src/dlgtakepicnum.ui src/dlgpicorvid.ui src/dlgpicfile.ui src/dlgvidfile.ui src/dlgshowpic.ui src/dlgshowvid.ui src/dlgstandby.ui src/dlgoff.ui src/dlgvidsavetime.ui src/dlgtvmode.ui src/dlgrecovery.ui src/dlgbackground.ui src/dlgcolor.ui src/dlgtime.ui .tmp/qt_osd_arm1.0.0/ && (cd `dirname .tmp/qt_osd_arm1.0.0` && $(TAR) qt_osd_arm1.0.0.tar qt_osd_arm1.0.0 && $(COMPRESS) qt_osd_arm1.0.0.tar) && $(MOVE) `dirname .tmp/qt_osd_arm1.0.0`/qt_osd_arm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt_osd_arm1.0.0
 
 clean:compiler_clean 
 	-$(DEL_FILE) -rf $(OBJECTS) $(MAP) $(XDC_CFG)
@@ -246,10 +310,10 @@ mocclean: compiler_moc_header_clean compiler_moc_source_clean
 mocables: compiler_moc_header_make_all compiler_moc_source_make_all
 
 #moc_***.cpp Add Dialog by Vincent------(4)
-compiler_moc_header_make_all: moc_Button.cpp moc_mainwindow.cpp moc_dlgf1.cpp moc_qbattery.cpp moc_qgximage.cpp moc_qv4l2.cpp moc_mainmenu.cpp moc_backplay.cpp
+compiler_moc_header_make_all: moc_Button.cpp moc_mainwindow.cpp moc_dlgf1.cpp moc_dlgshowdev.cpp moc_dlglanguage.cpp moc_dlgtakepicnum.cpp moc_dlgpicorvid.cpp moc_dlgpicfile.cpp moc_dlgvidfile.cpp moc_dlgshowpic.cpp moc_dlgshowvid.cpp moc_dlgstandby.cpp moc_dlgoff.cpp moc_dlgvidsavetime.cpp moc_dlgtvmode.cpp moc_dlgrecovery.cpp moc_dlgbackground.cpp moc_dlgcolor.cpp moc_dlgtime.cpp moc_qbattery.cpp moc_qgximage.cpp moc_qv4l2.cpp moc_mainmenu.cpp moc_backplay.cpp
 #moc_***.cpp Add Dialog by Vincent------(5)
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_Button.cpp moc_mainwindow.cpp moc_dlgf1.cpp moc_qbattery.cpp moc_qgximage.cpp moc_qv4l2.cpp moc_mainmenu.cpp moc_backplay.cpp
+	-$(DEL_FILE) moc_Button.cpp moc_mainwindow.cpp moc_dlgf1.cpp moc_dlgshowdev.cpp moc_dlglanguage.cpp moc_dlgtakepicnum.cpp moc_dlgpicorvid.cpp moc_dlgpicfile.cpp moc_dlgvidfile.cpp moc_dlgshowpic.cpp moc_dlgshowvid.cpp moc_dlgstandby.cpp moc_dlgoff.cpp moc_dlgvidsavetime.cpp moc_dlgtvmode.cpp moc_dlgrecovery.cpp moc_dlgbackground.cpp moc_dlgcolor.cpp moc_dlgtime.cpp moc_qbattery.cpp moc_qgximage.cpp moc_qv4l2.cpp moc_mainmenu.cpp moc_backplay.cpp
 moc_Button.cpp: src/Button.h
 	/usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/Button.h -o moc_Button.cpp
 moc_mainwindow.cpp: src/qv4l2.h \
@@ -257,6 +321,7 @@ moc_mainwindow.cpp: src/qv4l2.h \
 		src/Button.h \
 		src/mainmenu.h \
 		src/mainwindow.h \
+        src/dlgbackground.h \
         src/dlgf1.h
 	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/mainwindow.h -o moc_mainwindow.cpp
 
@@ -265,8 +330,75 @@ moc_dlgf1.cpp: src/qv4l2.h \
 		src/qgximage.h \
 		src/Button.h \
 		src/mainmenu.h \
+        src/dlgshowdev.h \
+        src/dlglanguage.h \
+        src/dlgtakepicnum.h \
+        src/dlgpicorvid.h \
+        src/dlgstandby.h \
+        src/dlgvidsavetime.h \
+        src/dlgtvmode.h \
+        src/dlgrecovery.h \
+        src/dlgoff.h \
+        src/dlgcolor.h \
+        src/dlgtime.h \
 		src/dlgf1.h
 	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgf1.h -o moc_dlgf1.cpp
+
+moc_dlgshowdev.cpp: src/dlgshowdev.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgshowdev.h -o moc_dlgshowdev.cpp
+
+moc_dlglanguage.cpp: src/dlglanguage.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlglanguage.h -o moc_dlglanguage.cpp
+
+moc_dlgtakepicnum.cpp: src/dlgtakepicnum.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgtakepicnum.h -o moc_dlgtakepicnum.cpp
+
+
+
+moc_dlgpicorvid.cpp: src/dlgpicorvid.h \
+                     src/dlgpicfile.h \
+                     src/dlgvidfile.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgpicorvid.h -o moc_dlgpicorvid.cpp
+
+moc_dlgpicfile.cpp: src/dlgpicfile.h \
+                    src/dlgshowpic.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgpicfile.h -o moc_dlgpicfile.cpp
+
+moc_dlgvidfile.cpp: src/dlgvidfile.h \
+                    src/dlgshowvid.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgvidfile.h -o moc_dlgvidfile.cpp
+
+moc_dlgshowpic.cpp: src/dlgshowpic.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgshowpic.h -o moc_dlgshowpic.cpp
+
+moc_dlgshowvid.cpp: src/dlgshowvid.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgshowvid.h -o moc_dlgshowvid.cpp
+
+moc_dlgstandby.cpp: src/dlgstandby.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgstandby.h -o moc_dlgstandby.cpp
+
+moc_dlgoff.cpp: src/dlgoff.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgoff.h -o moc_dlgoff.cpp
+
+moc_dlgvidsavetime.cpp: src/dlgvidsavetime.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgvidsavetime.h -o moc_dlgvidsavetime.cpp
+
+moc_dlgtvmode.cpp: src/dlgtvmode.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgtvmode.h -o moc_dlgtvmode.cpp
+
+moc_dlgrecovery.cpp: src/dlgrecovery.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgrecovery.h -o moc_dlgrecovery.cpp
+
+moc_dlgbackground.cpp: src/dlgbackground.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgbackground.h -o moc_dlgbackground.cpp
+
+moc_dlgcolor.cpp: src/dlgcolor.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgcolor.h -o moc_dlgcolor.cpp
+
+moc_dlgtime.cpp: src/dlgtime.h
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/moc $(DEFINES) $(INCPATH) src/dlgtime.h -o moc_dlgtime.cpp
+
+
 
 moc_qbattery.cpp: src/qt.h \
 		src/qbattery.h
@@ -315,15 +447,16 @@ compiler_image_collection_clean:
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
 #ui_***.h Add Dialog by Vincent------(7)
-compiler_uic_make_all: ui_mainwindow.h \ui_dlgf1.h 
+compiler_uic_make_all: ui_mainwindow.h \ui_dlgf1.h \ui_dlgshowdev.h \ui_dlglanguage.h \ui_dlgtakepicnum.h \ui_dlgpicorvid.h \ui_dlgpicfile.h \ui_dlgvidfile.h \ui_dlgshowpic.h \ui_dlgshowvid.h \ui_dlgstandby.h \ui_dlgoff.h \ui_dlgvidsavetime.h \ui_dlgtvmode.h \ui_dlgrecovery.h \ui_dlgbackground.h \ui_dlgcolor.h \ui_dlgtime.h
 #ui_***.h Add Dialog by Vincent------(8)
 compiler_uic_clean:
-	    -$(DEL_FILE) ui_mainwindow.h \ui_dlgf1.h
+	    -$(DEL_FILE) ui_mainwindow.h \ui_dlgf1.h \ui_dlgshowdev.h \ui_dlglanguage.h \ui_dlgtakepicnum.h \ui_dlgpicorvid.h \ui_dlgpicfile.h \ui_dlgvidfile.h \ui_dlgshowpic.h \ui_dlgshowvid.h \ui_dlgstandby.h \ui_dlgoff.h \ui_dlgvidsavetime.h \ui_dlgtvmode.h \ui_dlgrecovery.h \ui_dlgbackground.h \ui_dlgcolor.h \ui_dlgtime.h
 ui_mainwindow.h: src/mainwindow.ui \
 		src/qgximage.h \
 		src/qbattery.h \
 		src/Button.h \
 		src/qt.h \
+        src/dlgbackground.h \
         src/dlgf1.h
 	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/mainwindow.ui -o ui_mainwindow.h
 #ui_***.h and context Add Dialog by Vincent------(9)
@@ -331,8 +464,87 @@ ui_dlgf1.h: src/dlgf1.ui \
 		src/qgximage.h \
 		src/qbattery.h \
 		src/Button.h \
+        src/dlgpicorvid.h \
+        src/dlgstandby.h \
+        src/dlgvidsavetime.h \
+        src/dlgtvmode.h \
+        src/dlgrecovery.h \
+        src/dlgoff.h \
+        src/dlgcolor.h \
+        src/dlgtime.h \
 		src/qt.h 
 	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgf1.ui -o ui_dlgf1.h
+
+ui_dlgshowdev.h: src/dlgshowdev.ui \
+		src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgshowdev.ui -o ui_dlgshowdev.h
+
+ui_dlglanguage.h: src/dlglanguage.ui \
+		src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlglanguage.ui -o ui_dlglanguage.h
+
+ui_dlgtakepicnum.h: src/dlgtakepicnum.ui \
+		src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgtakepicnum.ui -o ui_dlgtakepicnum.h
+
+
+ui_dlgpicorvid.h: src/dlgpicorvid.ui \
+                  src/dlgpicfile.h \
+                  src/dlgvidfile.h \
+		          src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgpicorvid.ui -o ui_dlgpicorvid.h
+
+ui_dlgpicfile.h: src/dlgpicfile.ui \
+                 src/dlgshowpic.h \
+		         src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgpicfile.ui -o ui_dlgpicfile.h
+
+ui_dlgvidfile.h: src/dlgvidfile.ui \
+                 src/dlgshowvid.h \
+		         src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgvidfile.ui -o ui_dlgvidfile.h
+
+ui_dlgshowpic.h: src/dlgshowpic.ui \
+		         src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgshowpic.ui -o ui_dlgshowpic.h
+
+ui_dlgshowvid.h: src/dlgshowvid.ui \
+		         src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgshowvid.ui -o ui_dlgshowvid.h
+
+ui_dlgstandby.h: src/dlgstandby.ui \
+		         src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgstandby.ui -o ui_dlgstandby.h
+
+ui_dlgoff.h: src/dlgoff.ui \
+		     src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgoff.ui -o ui_dlgoff.h
+
+ui_dlgvidsavetime.h: src/dlgvidsavetime.ui \
+		             src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgvidsavetime.ui -o ui_dlgvidsavetime.h
+
+ui_dlgtvmode.h: src/dlgtvmode.ui \
+		        src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgtvmode.ui -o ui_dlgtvmode.h
+
+ui_dlgrecovery.h: src/dlgrecovery.ui \
+		          src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgrecovery.ui -o ui_dlgrecovery.h
+
+ui_dlgbackground.h: src/dlgbackground.ui \
+		            src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgbackground.ui -o ui_dlgbackground.h
+
+ui_dlgcolor.h: src/dlgcolor.ui \
+		            src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgcolor.ui -o ui_dlgcolor.h
+
+ui_dlgtime.h: src/dlgtime.ui \
+		            src/qt.h 
+	    /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/uic src/dlgtime.ui -o ui_dlgtime.h
+
+
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -368,6 +580,7 @@ mainwindow.o: src/mainwindow.cpp src/mainwindow.h \
 		      ui_mainwindow.h \
 		      src/qbattery.h \
               src/dlgf1.h \
+              src/dlgbackground.h\
 		      src/qt.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o src/mainwindow.cpp
 
@@ -376,8 +589,106 @@ dlgf1.o: src/dlgf1.cpp src/dlgf1.h \
 		 src/qv4l2.h \
 		 ui_dlgf1.h \
 		 src/qbattery.h \
+         src/dlgshowdev.h \
+         src/dlglanguage.h \
+         src/dlgtakepicnum.h \
+         src/dlgpicorvid.h \
+         src/dlgstandby.h \
+         src/dlgvidsavetime.h \
+         src/dlgtvmode.h \
+         src/dlgrecovery.h \
+         src/dlgoff.h \
+         src/dlgcolor.h \
+         src/dlgtime.h \
 		 src/qt.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgf1.o src/dlgf1.cpp
+
+dlgshowdev.o: src/dlgshowdev.cpp src/dlgshowdev.h \
+         ui_dlgshowdev.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgshowdev.o src/dlgshowdev.cpp
+
+dlglanguage.o: src/dlglanguage.cpp src/dlglanguage.h \
+         ui_dlglanguage.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlglanguage.o src/dlglanguage.cpp
+
+dlgtakepicnum.o: src/dlgtakepicnum.cpp src/dlgtakepicnum.h \
+         ui_dlgtakepicnum.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgtakepicnum.o src/dlgtakepicnum.cpp
+
+
+
+dlgpicorvid.o: src/dlgpicorvid.cpp src/dlgpicorvid.h \
+         ui_dlgpicorvid.h \
+         src/dlgpicfile.h \
+         src/dlgvidfile.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgpicorvid.o src/dlgpicorvid.cpp
+
+dlgpicfile.o: src/dlgpicfile.cpp src/dlgpicfile.h \
+         ui_dlgpicfile.h \
+         src/dlgshowpic.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgpicfile.o src/dlgpicfile.cpp
+
+dlgvidfile.o: src/dlgvidfile.cpp src/dlgvidfile.h \
+         ui_dlgvidfile.h \
+         src/dlgshowvid.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgvidfile.o src/dlgvidfile.cpp
+
+dlgshowpic.o: src/dlgshowpic.cpp src/dlgshowpic.h \
+         ui_dlgshowpic.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgshowpic.o src/dlgshowpic.cpp
+
+dlgshowvid.o: src/dlgshowvid.cpp src/dlgshowvid.h \
+         ui_dlgshowvid.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgshowvid.o src/dlgshowvid.cpp
+
+dlgstandby.o: src/dlgstandby.cpp src/dlgstandby.h \
+         ui_dlgstandby.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgstandby.o src/dlgstandby.cpp
+
+dlgoff.o: src/dlgoff.cpp src/dlgoff.h \
+         ui_dlgoff.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgoff.o src/dlgoff.cpp
+
+dlgvidsavetime.o: src/dlgvidsavetime.cpp src/dlgvidsavetime.h \
+         ui_dlgvidsavetime.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgvidsavetime.o src/dlgvidsavetime.cpp
+
+dlgtvmode.o: src/dlgtvmode.cpp src/dlgtvmode.h \
+         ui_dlgtvmode.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgtvmode.o src/dlgtvmode.cpp
+
+dlgrecovery.o: src/dlgrecovery.cpp src/dlgrecovery.h \
+         ui_dlgrecovery.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgrecovery.o src/dlgrecovery.cpp
+
+dlgbackground.o: src/dlgbackground.cpp src/dlgbackground.h \
+         ui_dlgbackground.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgbackground.o src/dlgbackground.cpp
+
+dlgcolor.o: src/dlgcolor.cpp src/dlgcolor.h \
+         ui_dlgcolor.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgcolor.o src/dlgcolor.cpp
+
+dlgtime.o: src/dlgtime.cpp src/dlgtime.h \
+         ui_dlgtime.h \
+		 src/qt.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o dlgtime.o src/dlgtime.cpp
+
 
 qbattery.o: src/qbattery.cpp src/qbattery.h \
 		    src/qt.h
@@ -411,6 +722,59 @@ moc_mainwindow.o: moc_mainwindow.cpp
 #moc_***.o and context Add Dialog by Vincent------(12)
 moc_dlgf1.o: moc_dlgf1.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgf1.o moc_dlgf1.cpp
+
+moc_dlgshowdev.o: moc_dlgshowdev.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgshowdev.o moc_dlgshowdev.cpp
+
+moc_dlglanguage.o: moc_dlglanguage.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlglanguage.o moc_dlglanguage.cpp
+
+moc_dlgtakepicnum.o: moc_dlgtakepicnum.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgtakepicnum.o moc_dlgtakepicnum.cpp
+
+moc_dlgcolor.o: moc_dlgcolor.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgcolor.o moc_dlgcolor.cpp
+
+moc_dlgtime.o: moc_dlgtime.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgtime.o moc_dlgtime.cpp
+
+
+
+moc_dlgpicorvid.o: moc_dlgpicorvid.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgpicorvid.o moc_dlgpicorvid.cpp
+
+moc_dlgpicfile.o: moc_dlgpicfile.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgpicfile.o moc_dlgpicfile.cpp
+
+moc_dlgvidfile.o: moc_dlgvidfile.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgvidfile.o moc_dlgvidfile.cpp
+
+moc_dlgshowpic.o: moc_dlgshowpic.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgshowpic.o moc_dlgshowpic.cpp
+
+moc_dlgshowvid.o: moc_dlgshowvid.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgshowvid.o moc_dlgshowvid.cpp
+
+moc_dlgstandby.o: moc_dlgstandby.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgstandby.o moc_dlgstandby.cpp
+
+moc_dlgoff.o: moc_dlgoff.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgoff.o moc_dlgoff.cpp
+
+moc_dlgvidsavetime.o: moc_dlgvidsavetime.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgvidsavetime.o moc_dlgvidsavetime.cpp
+
+moc_dlgtvmode.o: moc_dlgtvmode.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgtvmode.o moc_dlgtvmode.cpp
+
+moc_dlgrecovery.o: moc_dlgrecovery.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgrecovery.o moc_dlgrecovery.cpp
+
+moc_dlgbackground.o: moc_dlgbackground.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_dlgbackground.o moc_dlgbackground.cpp
+
+
+
 
 moc_qbattery.o: moc_qbattery.cpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_qbattery.o moc_qbattery.cpp

@@ -1,3 +1,4 @@
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -16,8 +17,11 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
+#include <QDebug>
 
 #include "dlgf1.h"
+#include "dlgoff.h"
+#include "dlgbackground.h"
 
 namespace Ui
 {
@@ -54,9 +58,12 @@ private:
     Button * capt_btn;
     Button * record_btn;
 
-    DlgF1 dlgf1;//定义第一级对话框对象，用于工作时候显示
+    DlgF1          dlgf1;//定义第一级对话框对象，用于工作时候显示
+    DlgBackGround  dlgbackground;
 
-signals:
+    bool key_flg;
+
+    QString g_PowerOnTimeStr;
 
 public slots:
     void call_testdialog();
@@ -65,16 +72,20 @@ public slots:
     void capture_fail();
     void capture();
     void SlotShowMainWindow();
+    void SlotSendNewFolderPath(QString StrNewFolderPath);
 
 private Q_SLOTS:
     void UpdateRTC();
 
 Q_SIGNALS:
-    void call_dialog();
-    void call_capture();
-    void call_rcdstarstop();
-    void SHideOsd1();
-    void SShowOsd1();
+    void    call_dialog();
+    void    call_capture();
+    void    call_rcdstarstop();
+    void    SHideOsd1();
+    void    SShowOsd1();
+    void    SSendNewFolderPath(QString StrNewFolderPath);
+    void    SFreshDlgf1Window();
+    void    SKeyPressed();
 };
 
 

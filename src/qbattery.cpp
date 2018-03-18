@@ -143,25 +143,11 @@ void QBattery::setValue(int value)
 {
     if(value<0 || value>100)
     {
-        qWarning() << "The value must be between 0 and 100 !";
+        qDebug()<< "The value must be between 0 and 100 !";
         return ;
     }
-
-//    if(value > m_value)
-//    {
-//        m_bReverse=false;
-//    }else if(value<m_value){
-//        m_bReverse=true;
-//    }else{
-//        return ;
-//    }
-
     m_value = value;
     emit valueChanged(m_value);
-
-//    updateTimer->start();
-//    m_currentValue=value;
-
     update();
 }
 
@@ -181,7 +167,6 @@ void QBattery::addValue()
     }
 
     emit valueChanged(m_value);
-
     update();
 }
 
@@ -201,6 +186,5 @@ void QBattery::subValue()
     }
 
     emit valueChanged(m_value);
-
     update();
 }

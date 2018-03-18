@@ -14,17 +14,17 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGxImage" name="label">
+   <widget class="QGxImage" name="label222">
     <property name="geometry">
      <rect>
-      <x>48</x>
-      <y>48</y>
-      <width>384</width>
-      <height>384</height>
+      <x>520</x>
+      <y>450</y>
+      <width>16</width>
+      <height>16</height>
      </rect>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Box</enum>
+     <enum>QFrame::NoFrame</enum>
     </property>
     <property name="text">
      <string>TextLabel</string>
@@ -34,7 +34,7 @@
     <property name="geometry">
      <rect>
       <x>480</x>
-      <y>90</y>
+      <y>120</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -43,10 +43,10 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>140</y>
-      <width>161</width>
-      <height>20</height>
+      <x>440</x>
+      <y>180</y>
+      <width>181</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -57,7 +57,7 @@
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>30</y>
+      <y>50</y>
       <width>161</width>
       <height>41</height>
      </rect>
@@ -70,6 +70,22 @@
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>48</x>
+      <y>48</y>
+      <width>384</width>
+      <height>384</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::NoFrame</enum>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>

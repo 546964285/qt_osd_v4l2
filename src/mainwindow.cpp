@@ -7,34 +7,37 @@
 #include "qbattery.h"
 #include "backplay.h"
 
+#include "dlgbackground.h"
+
 QObject * dstWnd;//屏蔽掉好像也没事
 
 MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWindow)
 { 
-    dlgf1.setModal(false);//false非模态/true模态//产生非模态对话框
+    dlgf1.setModal(false);//false非模态/true模态
     dlgf1.hide();
+    dlgbackground.setModal(false);
+    dlgbackground.show();
 
     setWindowFlags(Qt::FramelessWindowHint);// 隐藏标题栏
     setAutoFillBackground(true);// 设置窗体背景
-
     QPalette  palette;
     palette.setColor(QPalette::Background, QColor(53,73,123));//设置背景有颜色  QColor(0x00,0xff,0x00,0x00)透明
     setPalette(palette);
 
     ui->setupUi(this);
     ui->label->setText(tr(""));//清除控件文字内容
-    dstWnd = ui->label;//屏蔽掉好像也没事
-
-    ui->battery->setValue(70);//电池电量设置
+    ui->battery->setValue(70); //电池电量设置
 
     current_time = QDateTime::currentDateTime();//显示当前时间
     current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
-    QFont font("Arial",12,QFont::Bold,false);
+
+    QFont font("Arial",15,QFont::Bold,false);
     ui->label_2->setFont(font);
     QPalette pe;
     pe.setColor(QPalette::WindowText,Qt::white);
     ui->label_2->setPalette(pe);
     ui->label_2->setText(current_time_str);
+    ui->label_2->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
 
     updateRTC_timer=new QTimer(this);
     updateRTC_timer->setInterval(50);
@@ -47,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWind
     capt_btn->setReleasePicture(QPixmap(":/images/capt4.png"));
     capt_btn->setEnterPicture(QPixmap(":/images/capt3.png"));
     capt_btn->setLeavePicture(QPixmap(":/images/capt5.png"));
-    capt_btn->set_X_Y_width_height(490,170,71,71);
+    capt_btn->set_X_Y_width_height(490,230,71,71);
 
     record_btn=new Button(this);
     record_btn->setButtonPicture(QPixmap(":/images/start_r.png"));
@@ -55,15 +58,13 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWind
     record_btn->setReleasePicture(QPixmap(":/images/recording.jpg"));
     record_btn->setEnterPicture(QPixmap(":/images/recording.jpg"));
     record_btn->setLeavePicture(QPixmap(":/images/stop_r.png"));
-    record_btn->set_X_Y_width_height(490,280,71,71);
+    record_btn->set_X_Y_width_height(490,340,71,71);
 
     v4l2thread.capture_lock=false;
     v4l2thread.video_recording=false;
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
 
-    //connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
-    // connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
     connect(this, SIGNAL(call_capture()), this, SLOT(capture()));
     connect(this, SIGNAL(call_capture()), &v4l2thread, SLOT(video0_capture()));
     connect(&v4l2thread,SIGNAL(capture_ok()),this,SLOT(capture_ok()));
@@ -74,21 +75,38 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),ui(new Ui::MainWind
     connect(this, SIGNAL(SShowOsd1()), &v4l2thread, SLOT(trans_osd1()));//显示Osd1视频窗口 信号
     connect(this, SIGNAL(SHideOsd1()), &v4l2thread, SLOT(blank_osd1()));//隐藏Osd1视频窗口 信号
     connect(&dlgf1, SIGNAL(SShowMainWindow()), this, SLOT(SlotShowMainWindow()));
+
+    connect(&dlgf1, SIGNAL(SSendNewFolderPath(QString )), this, SLOT(SlotSendNewFolderPath(QString )));
+    connect(this, SIGNAL(SSendNewFolderPath(QString )), &v4l2thread, SLOT(SlotSendNewFolderPath(QString )));
+
+    connect(this, SIGNAL(SFreshDlgf1Window()), &dlgf1,SLOT(SlotFreshThisWindow()));
+
+    show();
+    key_flg=false;
+
+    g_PowerOnTimeStr=current_time.toString("hhmm");
+    qDebug()<< "g_PowerOnTimeStr :" << g_PowerOnTimeStr;
 }
 
 MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::SlotSendNewFolderPath(QString StrNewFolderPath)
+{
+    qDebug() << "MainWindow Got Singnal StrNewFolderPath is " << StrNewFolderPath;
+    emit SSendNewFolderPath(StrNewFolderPath);
+}
+
 void MainWindow::SlotShowMainWindow()//显示主窗口对话框
 {
     show();
+    emit SShowOsd1();//显示Osd1视频窗口 信号
 }
 
 void MainWindow::rcdstarstop()//视频录制开始停止控制
 {
     qDebug() <<"in slot rcdstarstop() @ mainwindow";
-
     if(v4l2thread.video_recording==false)
     {
         v4l2thread.video_recording=true;
@@ -122,8 +140,7 @@ void MainWindow::msecSleep(int msec)
 void MainWindow::capture_ok()
 {
     qDebug() <<"in slot capture_ok()" << endl;
-    //    SleeperThread::msleep(1000);
-    this->msecSleep(1000);
+    this->msecSleep(500);
     capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
     v4l2thread.capture_lock=false;
 }
@@ -131,9 +148,7 @@ void MainWindow::capture_ok()
 void MainWindow::capture_fail()
 {
     qDebug() <<"in slot capture_fail()" << endl;
-
-    //    SleeperThread::msleep(1000);
-    this->msecSleep(1000);
+    this->msecSleep(500);
     capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
     v4l2thread.capture_lock=false;
 }
@@ -155,7 +170,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    if (press)
+    if(press)
     {
         this->move(this->pos() + event->globalPos() - oldPos);
         oldPos = event->globalPos();
@@ -198,8 +213,56 @@ int MainWindow::GetI2CValue()
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    qDebug() << "pressed key is" << QKeySequence(event->modifiers() + event->key());
-    if(event->isAutoRepeat()) return;// 按键重复时不做处理
+    qDebug() << "MainWindow pressed key is" << QKeySequence(event->modifiers() + event->key());
+    key_flg=false;
+    emit SKeyPressed();
+    switch (event->key())
+    {
+        case Qt::Key_Return:
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_M:
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_Left:
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_Right:
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_T:
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_P://录像
+        {
+            key_flg=true;
+        }
+        break;
+        case Qt::Key_C:  //Captrue
+        {
+            key_flg=true;
+        }
+        break;
+        default:QWidget::keyPressEvent(event);break;
+    }
+}
+
+QFont Font;
+QPalette Palette;
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    qDebug() << "MainWindow Released key is" << QKeySequence(event->modifiers() + event->key());
     switch (event->key())
     {
         case Qt::Key_Return:
@@ -209,87 +272,78 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         break;
         case Qt::Key_M:
         {
-            emit SHideOsd1();//隐藏Osd1视频窗口 信号
-            dlgf1.show();    //菜单对话框显示
+            if(key_flg==true)
+            {
+                key_flg=false;
+                hide();
+                emit  SHideOsd1();//隐藏Osd1视频窗口 信号
+                emit  SFreshDlgf1Window();
+                dlgf1.show();    //菜单对话框显示
+            }
         }
         break;
         case Qt::Key_Left:
         {
-
+            emit SHideOsd1();//隐藏Osd1视频窗口 信号
+            ui->label->setText(tr("充电中......"));//清除控件文字内容
+            Font.setPointSize(50);//大小
+            ui->label->setFont(Font);
+            Palette.setColor(QPalette::WindowText,Qt::white);//颜色
+            ui->label->setPalette(Palette);
+            ui->label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
         }
         break;
         case Qt::Key_Right:
         {
+            //g_PowerOnTimeStr=current_time.toString("hhmm");
+            //qDebug()<< "g_PowerOnTimeStr :" << g_PowerOnTimeStr;
 
+            emit SHideOsd1();//隐藏Osd1视频窗口 信号
+            ui->label->setText(tr("关机中......"));//清除控件文字内容
+            Font.setPointSize(50);//大小
+            ui->label->setFont(Font);
+            Palette.setColor(QPalette::WindowText,Qt::white);//颜色
+            ui->label->setPalette(Palette);
+            ui->label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
         }
         break;
         case Qt::Key_T:
         {
-
+            ui->label->setText(tr(""));//清除控件文字内容
+            emit SShowOsd1();//显示Osd1视频窗口 信号
         }
         break;
-        case Qt::Key_P:
+        case Qt::Key_P:  //录像
         {
-
+                if(key_flg==true)
+                {
+                    key_flg=false;
+                    emit call_rcdstarstop();
+                }
         }
         break;
-
-        case Qt::Key_Z:
-        //  capt_btn->keyPressEvent(event);
-        //  capt_btn->setIcon(QIcon(*capt_btn->enterPicture));
-        if(v4l2thread.capture_lock==false)
+        case Qt::Key_C:  //Captrue
         {
-            emit call_capture();
+                if(key_flg==true)
+                {
+                     key_flg=false;
+                     if(v4l2thread.capture_lock==false)
+                     {
+                         emit call_capture();
+                     }
+                }
         }
         break;
-
-        case Qt::Key_X:
-        emit call_rcdstarstop();
-        break;
-
-        default:
-        QWidget::keyPressEvent(event);
-        break;
-    }
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent *event)
-{
-    int keyValue;
-    keyValue=event->key();
-    qDebug() << "released keyValue= " << keyValue << endl;
-
-    switch (keyValue)
-    {
-        case Qt::Key_Enter:
-        case Qt::Key_Return:
-        {
-            //ui->pushButton->setDown(false);
-        }
-        break;
-        case Qt::Key_A:
-        {
-            //ui->pushButton_2->setDown(false);
-        }
-        break;
-        //case Qt::Key_Z:
-        //{
-            //capt_btn->keyReleaseEvent(event);
-        //}
-        //break;
-        default:
-        QWidget::keyReleaseEvent(event);
-        break;
-    }
+        default:QWidget::keyReleaseEvent(event);break;
+      }
+      key_flg=false;
 }
 
 void MainWindow::UpdateRTC()
 {
     current_time = QDateTime::currentDateTime();
     current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
-    //qDebug() << current_time_str;
     ui->label_2->setText(current_time_str);
-    //update();
 }
 
 

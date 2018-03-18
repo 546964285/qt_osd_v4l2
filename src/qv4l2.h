@@ -49,18 +49,26 @@ public:
     bool open_osd0_device();
     bool init_osd0_device();
     bool start_loop();
-    int stop_capture(int vid_win);
+    int  stop_capture(int vid_win);
     void * get_display_buffer(int vid_win);
-    int put_display_buffer(int vid_win, void *addr);
+    int  put_display_buffer(int vid_win, void *addr);
 
-    int video0_capture();
-    int rcdstar();
-    int rcdstop();
+    int  video0_capture();
+    int  rcdstar();
+    int  rcdstop();
 
     void encloop(void * addr);
     bool video_recording;
 
-private:
+    QString m_PowerOnTimeStr;
+    QString m_PictureNoToString;
+    unsigned int m_PictureNo;
+    int PowerOn_flag;
+
+    QString m_StrNewFolderPath;
+
+
+private: 
 
     struct buffer
     {
@@ -71,7 +79,7 @@ private:
     unsigned int g_imgBufCount;
     buffer *vid0Buf;
     //unsigned int index;
-//    char *src_ptr;
+    //char *src_ptr;
 
     QString dev_name_capture;
     QString dev_name_rsz;
@@ -111,6 +119,7 @@ private:
     char vbufferOut[20480];
 
     v4l2_buffer cap_buf;
+
 };
 
 class QV4l2Thread : public QThread
@@ -131,14 +140,16 @@ private:
     QV4l2 *pV4l2;
 
 public slots:
-    void blank_osd1();
-    void trans_osd1();
-    void video0_capture();
-    void rcdstarstop();
+    void    blank_osd1();
+    void    trans_osd1();
+    void    video0_capture();
+    void    rcdstarstop();
+    void    SlotSendNewFolderPath(QString StrNewFolderPath);
 
 Q_SIGNALS:
-    void capture_ok();
-    void capture_fail();
+    void    capture_ok();
+    void    capture_fail();
+    void    SSendNewFolderPath(QString StrNewFolderPath);
 };
 
 #endif // QV4L2_H

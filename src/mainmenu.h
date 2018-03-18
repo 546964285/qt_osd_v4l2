@@ -3,7 +3,6 @@
 #include <QWidget>
 #include <QDialog>
 #include <QPushButton>
-//#include <QDeclarativeView>
 
 class MainMenu : public QDialog
 {

@@ -2,10 +2,10 @@
 #define JPEGENC_H
 #include <stdio.h>
 #include <stdlib.h>         // exit
-#include <fcntl.h>		// for open()
-#include <unistd.h>     // for close()
+#include <fcntl.h>          // for open()
+#include <unistd.h>         // for close()
 #include <malloc.h>         // clloc
-#include <getopt.h>		// getopt_long()
+#include <getopt.h>         // getopt_long()
 #include <string.h>
 #include <assert.h>
 #include <errno.h>

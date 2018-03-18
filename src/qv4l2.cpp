@@ -47,13 +47,10 @@
 #include <ti/sdo/dmai/ce/Venc1.h>
 
 #include <mp4v2/mp4v2.h>
-
 #include <iostream>
 #include <QCoreApplication>
 #include "qv4l2.h"
-
 #include <QDebug>
-//#include "qt.h"
 
 extern "C"
 {
@@ -228,12 +225,11 @@ QV4l2::QV4l2()
 
 QV4l2::~QV4l2()
 {
-
 }
 
 int QV4l2::parse_yee_table(void)//分析YEE表
 {
-        int ret = -1, val, i;
+        int  ret = -1, val, i;
         FILE *fp;
 
         fp = fopen(YEE_TABLE_FILE, "r");
@@ -544,7 +540,6 @@ bool QV4l2::open_capture_device()
             //exit (EXIT_FAILURE);
         }
 
-
         cap.index++;
     }
 
@@ -587,6 +582,17 @@ bool QV4l2::open_capture_device()
 
 bool QV4l2::init_capture_device()
 {
+    if(PowerOn_flag!=1)
+    {
+        QDateTime current_time = QDateTime::currentDateTime(); //获取时间
+        m_PowerOnTimeStr=current_time.toString("hhmm");//转化成开机时间
+        qDebug()<< "Picture No Named By Time m_PowerOnTimeStr :" << m_PowerOnTimeStr;
+        m_PictureNo=1;//当前照片编号
+        m_PictureNoToString="0001";
+        m_PictureNoToString=m_PowerOnTimeStr+m_PictureNoToString;
+        PowerOn_flag=1;
+    }
+
     struct v4l2_capability v4l2Cap;
     // 获取并分析v4l2设备属性
     if(xioctl(capture_fd, VIDIOC_QUERYCAP, &v4l2Cap) == -1)
@@ -1347,8 +1353,13 @@ int QV4l2::video0_capture()//拍照函数
     CERuntime_init();
     Dmai_init();
 
-    QDateTime time = QDateTime::currentDateTime();
-    QString out_file=QString("photos/DICM"+time.toString("yyMMddhhmmss")+".jpg");//照片存放路径
+    //QDateTime time = QDateTime::currentDateTime();
+
+    //QString out_file=QString("/media/mmcblk0p1/DCIM/"+m_PictureNoToString+".jpg");//照片存放路径
+    QString out_file=QString(m_StrNewFolderPath + m_PictureNoToString + ".jpg");//照片存放路径
+
+    qDebug()<< "Picture out_file :" << out_file;
+    //QString out_file=QString("/media/mmcblk0p1/DCIM/"+time.toString("yyMMddhhmmss")+".jpg");//照片存放路径
 
     outFile = fopen(out_file.toStdString().c_str(),"wb");
 
@@ -1496,6 +1507,30 @@ int QV4l2::video0_capture()//拍照函数
     fclose(outFile);
 
     qDebug()<<"Capture done!"<<endl;
+
+    /////////////////////////////////////////////////////////////////////////////照片编号王文广//////////////
+    m_PictureNo=m_PictureNo+1;
+    m_PictureNoToString= QString::number(m_PictureNo, 10); //数字转字符串
+    if(m_PictureNo<10)
+    {
+        m_PictureNoToString="000"+m_PictureNoToString;
+    }
+    else if(m_PictureNo<100)
+    {
+        m_PictureNoToString="00"+m_PictureNoToString;
+    }
+    else if(m_PictureNo<1000)
+    {
+        m_PictureNoToString="0"+m_PictureNoToString;
+    }
+    else if(m_PictureNo>9999)//超出范围
+    {
+        m_PictureNo=0;
+    }
+
+    m_PictureNoToString=m_PowerOnTimeStr+m_PictureNoToString;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     return 0;
 }
 
@@ -1520,7 +1555,9 @@ int QV4l2::rcdstar()//录像
     CERuntime_init();
     Dmai_init();
 
-    hMP4File = CreateMP4File("output.mp4",384,384,9000,30);
+    //hMP4File = CreateMP4File("output.mp4",384,384,9000,30);
+    hMP4File = CreateMP4File("/media/mmcblk0p1/DCIM/output2.mp4",384,384,9000,30);
+
     if (hMP4File == MP4_INVALID_FILE_HANDLE)
     {
         printf("open file fialed.\n");
@@ -1920,6 +1957,12 @@ QV4l2Thread::QV4l2Thread()
 
 QV4l2Thread::~QV4l2Thread()
 {
+}
+
+void QV4l2Thread::SlotSendNewFolderPath(QString StrNewFolderPath)
+{
+    qDebug()<< "Slot in QV4l2Thread Got StrNewFolderPath is :" << StrNewFolderPath;
+    pV4l2->m_StrNewFolderPath=StrNewFolderPath;
 }
 
 void QV4l2Thread::run()

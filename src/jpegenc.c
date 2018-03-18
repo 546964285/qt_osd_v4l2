@@ -5,12 +5,9 @@ int readFrame(Buffer_Handle hBuf,void * ptr)
 {
     Int8 * framePtr = Buffer_getUserPtr(hBuf);
     BufferGfx_Dimensions dim;
-
     BufferGfx_getDimensions(hBuf,&dim);
-
     unsigned int ySize,cbcrSize;
     char * colorFmt=NULL;
-
     ySize = dim.width*dim.height;
 
     switch(BufferGfx_getColorSpace(hBuf))
@@ -45,11 +42,8 @@ int readFrame(Buffer_Handle hBuf,void * ptr)
     }
 
     memcpy(framePtr,ptr,221184);
-
     printf("Read %s frame size %d (%dx%d)\n", colorFmt,(int)(ySize+cbcrSize),(int)dim.width,(int)dim.height);
-
     Buffer_setNumBytesUsed(hBuf,Buffer_getSize(hBuf));
-
     return 0;
 }
 

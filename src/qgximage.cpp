@@ -21,5 +21,4 @@ void QGxImage::paintEvent(QPaintEvent * )
     QPainter p(this);
     p.setCompositionMode(QPainter::CompositionMode_Clear);
     p.fillRect(0,0,384,384,Qt::SolidPattern);
-    //p.fillRect(40,40,400,400,Qt::green);
 }
