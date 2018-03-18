@@ -6,5 +6,18 @@
         <file>images/capt3.png</file>
         <file>images/capt4.png</file>
         <file>images/capt5.png</file>
+        <file>images/recording.jpg</file>
+        <file>images/start_r.png</file>
+        <file>images/stop_r.png</file>
+        <file>gridview.qml</file>
+        <file>playback.qml</file>
+        <file>images/AddressBook_48.png</file>
+        <file>images/AudioPlayer_48.png</file>
+        <file>images/Camera_48.png</file>
+        <file>images/DateBook_48.png</file>
+        <file>images/TodoList_48.png</file>
+        <file>images/VideoPlayer_48.png</file>
+        <file>images/EMail_48.png</file>
+        <file>images/settings1.png</file>
     </qresource>
 </RCC>

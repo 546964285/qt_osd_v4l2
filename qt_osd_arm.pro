@@ -15,7 +15,8 @@ HEADERS += src/Button.h \
            src/qgximage.h \
            src/qt.h \
            src/qv4l2.h \
-	   src/mainmenu.h
+	   src/mainmenu.h \
+    src/backplay.h
 FORMS += src/mainwindow.ui
 SOURCES += src/Button.cpp \
            src/jpegenc.c \
@@ -24,7 +25,8 @@ SOURCES += src/Button.cpp \
            src/qbattery.cpp \
            src/qgximage.cpp \
            src/qv4l2.cpp \
-	   src/mainmenu.cpp
+	   src/mainmenu.cpp \
+    src/backplay.cpp
 RESOURCES += src/qt_osd_res.qrc
 QT += declarative
 

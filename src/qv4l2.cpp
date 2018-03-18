@@ -1200,7 +1200,7 @@ int QV4l2::video0_capture()
     Dmai_init();
 
     QDateTime time = QDateTime::currentDateTime();
-    QString out_file=QString("DICM"+time.toString("yyMMddhhmmss")+".jpg");
+    QString out_file=QString("photos/DICM"+time.toString("yyMMddhhmmss")+".jpg");
 
     outFile = fopen(out_file.toStdString().c_str(),"wb");
 

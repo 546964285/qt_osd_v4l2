@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QPushButton>
-#include <QDeclarativeView>
+//#include <QDeclarativeView>
 
 class MainMenu : public QDialog
 {
@@ -11,6 +11,9 @@ class MainMenu : public QDialog
 
 public:
     MainMenu(QWidget *parent = 0);
+
+public slots:
+    void cppSlot(int index);
 
 private:
 
