@@ -31,7 +31,8 @@ class QV4l2
 public:
     QV4l2();
     ~QV4l2();
-
+    
+    bool get_osd_nod();
     bool open_capture_device();
     bool init_capture_device();
     bool init_capture_mmap();

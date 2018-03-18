@@ -20,7 +20,7 @@ QV4l2::QV4l2()
     // READWRITE V4L2_CAP_READWRITE  直接使用read和write函数进行读写,用户空间和内核空间不断copy数据,效率最低
     // MMAP      V4L2_CAP_ASYNCIO    把内核空间内存映射到用户空间内存地址上操作,一直占用内核空间
     // USERPTR   V4L2_CAP_STREAMING  程序员在用户空间分配内存，由v4l2驱动直接把数据填充到指定内存中,这个最好
-
+    
     this->dev_name_capture = "/dev/video0";
     this->dev_name_rsz = "/dev/davinci_resizer";
     this->dev_name_prev = "/dev/davinci_previewer";
@@ -29,7 +29,7 @@ QV4l2::QV4l2()
     this->dev_name_vid0 = "/dev/video2";
     this->capture_buffers = NULL;
     this->g_imgBufCount = 3;
-
+    get_osd_nod();
     printf("in QV4l2 constructor\n");
 }
 
@@ -76,6 +76,35 @@ int QV4l2::xioctl(int hDev, int nType, void *pData)
     while(res == -1 && errno == EINTR); // errno == EINTR 被其它信号中断, 重新调用
 
     return res;
+}
+
+bool QV4l2::get_osd_nod()
+{
+    char d1[5];
+    char d2[50];
+    char * OSD1_DEVICE=NULL;
+    FILE *fp;
+    
+    fp = fopen("/proc/fb","r");
+    if(fp == NULL)
+    {
+        printf("Error in opening /proc/fb for reading\n");
+        return false;
+    }
+    
+    while( fscanf(fp, "%s",d1) != EOF)
+    {
+        fscanf(fp, "%s", d2);
+        
+        if(strcmp(d2, "dm_osd1_fb") == 0)
+        {
+            OSD1_DEVICE = (char *)malloc(10);
+            strcpy(OSD1_DEVICE,"/dev/fb");
+            strcat(OSD1_DEVICE,d1);
+            this->dev_name_osd1=OSD1_DEVICE;
+            break;
+        }
+    }
 }
 
 // 1.打开设备
