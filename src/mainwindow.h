@@ -8,7 +8,6 @@
 //#include <QThread>
 #include "qv4l2.h"
 #include "Button.h"
-#include "qgximage.h"
 
 namespace Ui {
     class MainWindow;
@@ -17,22 +16,12 @@ namespace Ui {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-	
-	void msecSleep(int msec);
+    QV4l2Thread v4l2thread;
 
-private slots:
-//    void on_pushButton_clicked();
-
-//    void on_btn_save_clicked();
-    void OnTimer();
-
-//    void on_pushButton_2_clicked();
-
-//    void on_pushButton_3_clicked();
+    void msecSleep(int msec);
 
 private:
     Ui::MainWindow *ui;
@@ -50,12 +39,9 @@ private:
     QTimer* updateRTC_timer;
     QLabel * logoLabel;
     Button * capt_btn;
-	
-		
-    QGxImage *m_pic;
-	
+
 signals:
-	
+
 public slots:
 //    void raising_value();
 
@@ -70,12 +56,8 @@ private Q_SLOTS:
 
 Q_SIGNALS:
     void call_dialog();
-	void call_capture();
-
-protected:
-//    void customEvent(QEvent *e);
+    void call_capture();
 };
-
 
 class TestDialog : public QDialog
 {
