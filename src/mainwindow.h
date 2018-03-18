@@ -5,7 +5,9 @@
 #include <QDialog>
 #include <QLabel>
 #include <QDateTime>
+#include <QThread>
 //#include "qv4l2.h"
+#include "Button.h"
 
 namespace Ui {
     class MainWindow;
@@ -17,6 +19,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+//    QV4l2Thread v4l2thread;
+
+    void msecSleep(int msec);
 
 private:
     Ui::MainWindow *ui;
@@ -32,8 +37,8 @@ private:
     QDateTime current_time;
     QString current_time_str;
     QTimer* updateRTC_timer;
-//    QV4l2Thread v4l2thread;
     QLabel * logoLabel;
+    Button * capt_btn;
 
 signals:
 
@@ -42,11 +47,16 @@ public slots:
 
     void call_testdialog();
 
+    void capture_ok();
+    void capture_fail();
+    void capture();
+
 private Q_SLOTS:
     void UpdateRTC();
 
 Q_SIGNALS:
     void call_dialog();
+    void call_capture();
 };
 
 class TestDialog : public QDialog
@@ -59,6 +69,24 @@ public:
 private:
 
     QPushButton *button;
+};
+
+
+class SleeperThread : public QThread
+{
+public:
+    static void sleep(unsigned long secs)
+    {
+        QThread::sleep(secs);
+    }
+    static void msleep(unsigned long msecs)
+    {
+        QThread::msleep(msecs);
+    }
+    static void usleep(unsigned long usecs)
+    {
+        QThread::usleep(usecs);
+    }
 };
 
 

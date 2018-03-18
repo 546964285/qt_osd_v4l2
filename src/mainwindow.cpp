@@ -79,13 +79,25 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
-    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
+    capt_btn=new Button(this);
+    capt_btn->setButtonPicture(QPixmap(":/images/capt1.png"));
+    capt_btn->setPressPicture(QPixmap(":/images/capt2.png"));
+    capt_btn->setReleasePicture(QPixmap(":/images/capt4.png"));
+    capt_btn->setEnterPicture(QPixmap(":/images/capt3.png"));
+    capt_btn->setLeavePicture(QPixmap(":/images/capt5.png"));
+    //capt_btn->setGeometry(QRect(470,170,71,71));
+    capt_btn->set_X_Y_width_height(470,170,71,71);
+
 
     //v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 //    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
 //    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
+
+    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
+
+    connect(this, SIGNAL(call_capture()), this, SLOT(capture()));
 }
 
 MainWindow::~MainWindow()
@@ -97,6 +109,61 @@ void MainWindow::call_testdialog()
 {
     TestDialog dialog(this);
     dialog.exec();
+}
+
+//void MainWindow::capture_ok()
+//{
+//    qDebug() <<"in slot capture_ok()" << endl;
+
+//    QTime delayTime = QTime::currentTime().addMSecs(1000);  //在当前时间上增加1S
+//    while( QTime::currentTime() < delayTime)
+//        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+
+//    capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
+//}
+
+//void MainWindow::capture_fail()
+//{
+//    qDebug() <<"in slot capture_fail()" << endl;
+
+//    QTime delayTime1 = QTime::currentTime().addMSecs(1000);  //在当前时间上增加1S
+//    while( QTime::currentTime() < delayTime1)
+//        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+//    capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
+//}
+
+void MainWindow::msecSleep(int msec)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
+    while( QTime::currentTime() <dieTime )
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
+void MainWindow::capture_ok()
+{
+    qDebug() <<"in slot capture_ok()" << endl;
+
+//    SleeperThread::msleep(1000);
+    this->msecSleep(1000);
+
+    capt_btn->setIcon(QIcon(*capt_btn->releasePicture));
+}
+
+void MainWindow::capture_fail()
+{
+    qDebug() <<"in slot capture_fail()" << endl;
+
+//    SleeperThread::msleep(1000);
+    this->msecSleep(1000);
+
+    capt_btn->setIcon(QIcon(*capt_btn->leavePicture));
+}
+
+
+void MainWindow::capture()
+{
+    qDebug() <<"in slot capture()" << endl;
+    capt_btn->setIcon(QIcon(*capt_btn->enterPicture));
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
@@ -152,6 +219,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         emit call_dialog();
         break;
 
+    case Qt::Key_Z:
+        //capt_btn->keyPressEvent(event);
+        //capt_btn->setIcon(QIcon(*capt_btn->enterPicture));
+        emit call_capture();
+        break;
+
     default:
         QWidget::keyPressEvent(event);
         break;
@@ -179,7 +252,11 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 //            ui->pushButton_2->setDown(false);
         }
         break;
-
+//    case Qt::Key_Z:
+//        {
+//            capt_btn->keyReleaseEvent(event);
+//        }
+//        break;
     default:
         QWidget::keyReleaseEvent(event);
         break;
