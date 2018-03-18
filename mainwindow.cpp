@@ -38,8 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label->setText(tr(""));
 
 //    ui->pushButton->setShortcut(Qt::Key_Enter);
-    ui->pushButton->setFocusPolicy(Qt::NoFocus);
-    ui->pushButton_2->setFocusPolicy(Qt::NoFocus);
+//    ui->pushButton->setFocusPolicy(Qt::NoFocus);
+//    ui->pushButton_2->setFocusPolicy(Qt::NoFocus);
 
     ui->battery->setValue(50);
 
@@ -53,12 +53,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
-
-    qreal delta=1;
-
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
-    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
-    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
+//    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
+//    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
 }
 
 MainWindow::~MainWindow()
@@ -107,15 +104,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Return:
         {
             //printf("opps 1\n");
-            ui->pushButton->click();
-            ui->pushButton->setDown(true);
+//            ui->pushButton->click();
+//            ui->pushButton->setDown(true);
+            ui->battery->addValue();
         }
         break;
     case Qt::Key_A:
         {
             //printf("opps 1\n");
-            ui->pushButton_2->click();
-            ui->pushButton_2->setDown(true);
+//            ui->pushButton_2->click();
+//            ui->pushButton_2->setDown(true);
+            ui->battery->subValue();
         }
         break;
 
@@ -138,12 +137,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     case Qt::Key_Enter:
     case Qt::Key_Return:
         {
-            ui->pushButton->setDown(false);
+//            ui->pushButton->setDown(false);
         }
         break;
     case Qt::Key_A:
         {
-            ui->pushButton_2->setDown(false);
+//            ui->pushButton_2->setDown(false);
         }
         break;
 
