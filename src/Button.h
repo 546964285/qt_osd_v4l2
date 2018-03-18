@@ -21,11 +21,12 @@ public:
     void mousePressEvent (QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent (QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
     void enterEvent(QEvent *);
     void leaveEvent(QEvent *);
     void resizeit(int w , int h);
 
-private:
     QPixmap * buttonPicture;
     QPixmap * pressPicture;
     QPixmap * releasePicture;

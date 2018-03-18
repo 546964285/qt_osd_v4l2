@@ -20,6 +20,8 @@ public:
     ~MainWindow();
     QV4l2Thread v4l2thread;
 
+    void msecSleep(int msec);
+
 private:
     Ui::MainWindow *ui;
 
@@ -44,6 +46,10 @@ public slots:
 
     void call_testdialog();
 
+    void capture_ok();
+    void capture_fail();
+    void capture();
+
 private Q_SLOTS:
     void UpdateRTC();
 
@@ -62,6 +68,24 @@ public:
 private:
 
     QPushButton *button;
+};
+
+
+class SleeperThread : public QThread
+{
+public:
+    static void sleep(unsigned long secs)
+    {
+        QThread::sleep(secs);
+    }
+    static void msleep(unsigned long msecs)
+    {
+        QThread::msleep(msecs);
+    }
+    static void usleep(unsigned long usecs)
+    {
+        QThread::usleep(usecs);
+    }
 };
 
 

@@ -1177,7 +1177,7 @@ bool QV4l2::trans_osd1()
     return true;   
 }
 
-bool QV4l2::video0_capture()
+int QV4l2::video0_capture()
 {
     qDebug()<<"video0_capture="<<endl;
     IMGENC1_Params          params      = Ienc1_Params_DEFAULT;
@@ -1346,6 +1346,7 @@ bool QV4l2::video0_capture()
     fclose(outFile);
 
     qDebug()<<"Capture done!"<<endl;
+    return 0;
 }
 
 bool QV4l2::start_loop()
@@ -1513,5 +1514,14 @@ void QV4l2Thread::trans_osd1()
 
 void QV4l2Thread::video0_capture()
 {
-    pV4l2->video0_capture();
+    int ret;
+    ret = pV4l2->video0_capture();
+    if(ret == 0)
+    {
+        emit capture_ok();
+    }
+    else
+    {
+        emit capture_fail();
+    }
 }
