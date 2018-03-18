@@ -8,15 +8,43 @@
 
 ####### Compiler, tools and options
 
+PLATFORM_DEVICE      = dm368
+PLATFORM_PERIPHERALS     = dm365
+PLATFORM_XDC_TARGET      = gnu.targets.arm.GCArmv5T
+PLATFORM_XDC         = ti.platforms.evmDM365
+DMAI_INSTALL_DIR     = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/dmai_2_20_00_15
+DVSDK_INSTALL_DIR    = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06
+CE_INSTALL_DIR       = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/codec-engine_2_26_02_11
+CMEM_INSTALL_DIR     = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/linuxutils_2_26_01_02
+FC_INSTALL_DIR       = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/framework-components_2_26_00_01
+XDAIS_INSTALL_DIR    = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/xdais_6_26_01_03
+LINUXKERNEL_INSTALL_DIR  = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/psp/linux-2.6.32.17-psp03.01.01.39
+CROSS_COMPILE        = /opt/codesourcery/arm-2009q1/bin/arm-none-linux-gnueabi-
+CODEC_INSTALL_DIR    = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/codecs-dm365_4_02_00_00
+XDC_INSTALL_DIR      = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/xdctools_3_16_03_36
+LINUXLIBS_INSTALL_DIR    = ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/linux-devkit/arm-none-linux-gnueabi/usr
+
+XDCPATH = $(DMAI_INSTALL_DIR)/packages;$(CE_INSTALL_DIR)/packages;$(FC_INSTALL_DIR)/packages;$(XDAIS_INSTALL_DIR)/packages;$(CMEM_INSTALL_DIR)/packages;$(CODEC_INSTALL_DIR)/packages
+XDC_CFG     = my_jpgenc_config
+MAP     = my_jpgenc.map
+XDC_CFLAGS  = my_jpgenc_config/compiler.opt
+XDC_LFILE   = my_jpgenc_config/linker.cmd
+XDC_CFGFILE = my_jpgenc.cfg
+CONFIG_BLD  = $(DMAI_INSTALL_DIR)/packages/config.bld
+export CROSS_COMPILE
+export XDCPATH
+export PLATFORM_XDC
+CONFIGURO   = $(PRE) $(XDC_INSTALL_DIR)/xs xdc.tools.configuro -t $(PLATFORM_XDC_TARGET) -p $(PLATFORM_XDC) -b $(CONFIG_BLD)
+
 CC            = arm-none-linux-gnueabi-gcc
 CXX           = arm-none-linux-gnueabi-g++
 DEFINES       = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)
 CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)
-INCPATH       = -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/qws/linux-arm-gnueabi-g++ -I. -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtCore -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtNetwork -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtGui -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include -Isrc -I../../RidgeRun-SDK-DM36x-Turrialba-Eval/kernel/linux-2.6.32.17-psp03.01.01.39/include -I. -I.
+INCPATH       = -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/qws/linux-arm-gnueabi-g++ -I. -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtCore -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtNetwork -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include/QtGui -I/usr/local/Trolltech/QtEmbedded-4.7.0-arm/include -Isrc -I../../RidgeRun-SDK-DM36x-Turrialba-Eval/kernel/linux-2.6.32.17-psp03.01.01.39/include -I. -I. -I$(LINUXKERNEL_INSTALL_DIR)/include
 LINK          = arm-none-linux-gnueabi-g++
-LFLAGS        = -Wl,-O1 -Wl,-rpath,/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib
-LIBS          = $(SUBLIBS)  -L/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib -lQtGui -L/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib -lQtNetwork -lQtCore -lpthread 
+LFLAGS        = -Wl,-O1 -Wl,-rpath,/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib -Wl,-Map,my_jpgenc.map
+LIBS          = $(SUBLIBS)  -L/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib -lQtGui -L/usr/local/Trolltech/QtEmbedded-4.7.0-arm/lib -lQtNetwork -lQtCore -lpthread -lm -lstdc++ -L$(LINUXLIBS_INSTALL_DIR)/lib -lasound
 AR            = arm-none-linux-gnueabi-ar cqs
 RANLIB        = 
 QMAKE         = /usr/local/Trolltech/QtEmbedded-4.7.0-arm/bin/qmake
@@ -47,7 +75,8 @@ SOURCES       = src/main.cpp \
 		src/mainwindow.cpp \
 		src/qbattery.cpp \
 		src/qgximage.cpp \
-		src/qv4l2.cpp moc_mainwindow.cpp \
+		src/qv4l2.cpp \
+		src/jpegenc.c moc_mainwindow.cpp \
 		moc_qbattery.cpp \
 		moc_qgximage.cpp \
 		moc_qv4l2.cpp \
@@ -57,6 +86,7 @@ OBJECTS       = main.o \
 		qbattery.o \
 		qgximage.o \
 		qv4l2.o \
+		jpegenc.o \
 		moc_mainwindow.o \
 		moc_qbattery.o \
 		moc_qgximage.o \
@@ -112,8 +142,8 @@ first: all
 
 all: Makefile $(TARGET)
 
-$(TARGET): ui_mainwindow.h $(OBJECTS)  
-	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
+$(TARGET): ui_mainwindow.h $(OBJECTS) $(XDC_LFILE)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(OBJCOMP) $(LIBS) -o $(TARGET) $(XDC_LFILE)
 
 Makefile: qt_osd_X11.pro  /usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/qws/linux-arm-gnueabi-g++/qmake.conf /usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/common/g++.conf \
 		/usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/common/unix.conf \
@@ -169,11 +199,11 @@ qmake:  FORCE
 
 dist: 
 	@$(CHK_DIR_EXISTS) .tmp/qt_osd_X111.0.0 || $(MKDIR) .tmp/qt_osd_X111.0.0 
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/mainwindow.h src/qbattery.h src/qgximage.h src/qt.h src/qv4l2.h .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/qt_osd_res.qrc .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/main.cpp src/mainwindow.cpp src/qbattery.cpp src/qgximage.cpp src/qv4l2.cpp .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/mainwindow.ui .tmp/qt_osd_X111.0.0/ && (cd `dirname .tmp/qt_osd_X111.0.0` && $(TAR) qt_osd_X111.0.0.tar qt_osd_X111.0.0 && $(COMPRESS) qt_osd_X111.0.0.tar) && $(MOVE) `dirname .tmp/qt_osd_X111.0.0`/qt_osd_X111.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt_osd_X111.0.0
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/mainwindow.h src/qbattery.h src/qgximage.h src/qt.h src/qv4l2.h src/jpegenc.h .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/qt_osd_res.qrc .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/main.cpp src/mainwindow.cpp src/qbattery.cpp src/qgximage.cpp src/qv4l2.cpp src/jpegenc.c .tmp/qt_osd_X111.0.0/ && $(COPY_FILE) --parents src/mainwindow.ui .tmp/qt_osd_X111.0.0/ && (cd `dirname .tmp/qt_osd_X111.0.0` && $(TAR) qt_osd_X111.0.0.tar qt_osd_X111.0.0 && $(COMPRESS) qt_osd_X111.0.0.tar) && $(MOVE) `dirname .tmp/qt_osd_X111.0.0`/qt_osd_X111.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt_osd_X111.0.0
 
 
 clean:compiler_clean 
-	-$(DEL_FILE) $(OBJECTS)
+	-$(DEL_FILE) -rf $(OBJECTS) $(MAP) $(XDC_CFG)
 	-$(DEL_FILE) *~ core *.core
 
 
@@ -238,6 +268,17 @@ compiler_clean: compiler_moc_header_clean compiler_rcc_clean compiler_uic_clean
 
 ####### Compile
 
+
+$(XDC_LFILE) $(XDC_CFLAGS): $(XDC_CFGFILE)
+	@echo
+	@echo ======== Building $(BUILD_TARGET) ========
+	@echo Configuring application using $<
+	@echo
+	$(CONFIGURO) -o $(XDC_CFG) $(XDC_CFGFILE)
+	
+test_xdc: $(XDC_CFGFILE)
+	$(CONFIGURO) -o $(XDC_CFG) $(XDC_CFGFILE)
+
 main.o: src/main.cpp src/mainwindow.h \
 		src/qv4l2.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o src/main.cpp
@@ -256,8 +297,11 @@ qbattery.o: src/qbattery.cpp src/qbattery.h \
 qgximage.o: src/qgximage.cpp src/qgximage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qgximage.o src/qgximage.cpp
 
-qv4l2.o: src/qv4l2.cpp src/qv4l2.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qv4l2.o src/qv4l2.cpp
+qv4l2.o: src/qv4l2.cpp src/qv4l2.h src/jpegenc.h $(XDC_CFLAGS)
+	$(CXX) -c $(shell cat $(XDC_CFLAGS)) $(CXXFLAGS) $(INCPATH) -o qv4l2.o src/qv4l2.cpp
+
+jpegenc.o: src/jpegenc.c src/jpegenc.h $(XDC_CFLAGS)
+	$(CC) -c $(shell cat $(XDC_CFLAGS)) $(CFLAGS) $(INCPATH) -o jpegenc.o src/jpegenc.c
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp

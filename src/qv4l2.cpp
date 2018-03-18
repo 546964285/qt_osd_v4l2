@@ -1,17 +1,56 @@
-#include <sys/stat.h>
-#include <errno.h>
-#include <stdlib.h>         // exit
-#include <sys/ioctl.h>
-#include <fcntl.h>          // io底层操作  打开设备 open
-#include <sys/mman.h>
-#include <linux/videodev2.h>
-#include <unistd.h>         // getpagesize
-#include <malloc.h>         // clloc
 #include <stdio.h>
+#include <stdlib.h>         // exit
+#include <fcntl.h>		// for open()
+#include <unistd.h>     // for close()
+#include <malloc.h>         // clloc
+#include <getopt.h>		// getopt_long()
+#include <string.h>
+#include <assert.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+
+#include <asm/types.h>		// for videodev2.h
+
+#include <linux/videodev.h>
+#include <linux/videodev2.h>
+#include <media/davinci/dm365_ccdc.h>
+#include <media/davinci/vpfe_capture.h>
+#include <media/davinci/imp_previewer.h>
+#include <media/davinci/imp_resizer.h>
+#include <media/davinci/dm365_ipipe.h>
+
+#include <video/davincifb_ioctl.h>
+#include <video/davinci_osd.h>
+
+#include <xdc/std.h>
+
+#include <ti/sdo/ce/Engine.h>
+#include <ti/sdo/ce/CERuntime.h>
+
+#include <ti/sdo/dmai/ColorSpace.h>
+#include <ti/sdo/dmai/Dmai.h>
+#include <ti/sdo/dmai/Time.h>
+#include <ti/sdo/dmai/Buffer.h>
+#include <ti/sdo/dmai/BufferGfx.h>
+#include <ti/sdo/dmai/ce/Ienc1.h>
 
 #include <iostream>
 #include <QCoreApplication>
 #include "qv4l2.h"
+
+#include <QDebug>
+//#include "qt.h"
+extern "C" {
+    #include "jpegenc.h"
+}
+
+using namespace std;
 
 // 0.构造函数
 QV4l2::QV4l2()
@@ -452,7 +491,8 @@ bool QV4l2::init_capture_device()
     memset(&v4l2Fmt, 0, sizeof(v4l2Fmt));
     v4l2Fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     struct v4l2_pix_format *pFmt = &v4l2Fmt.fmt.pix;
-    pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
+//    pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
+    pFmt->pixelformat = V4L2_PIX_FMT_NV12;
     pFmt->width = 384;
     pFmt->height = 384;
     if(xioctl(capture_fd, VIDIOC_S_FMT, &v4l2Fmt) == -1)
@@ -659,7 +699,8 @@ bool QV4l2::init_display_device()
     v4l2_format setfmt;
     CLEAR(setfmt);
     setfmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
-    setfmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY;
+//    setfmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY;
+    setfmt.fmt.pix.pixelformat = V4L2_PIX_FMT_NV12;
     setfmt.fmt.pix.width = 384;
     setfmt.fmt.pix.height = 384;
     setfmt.fmt.pix.field = V4L2_FIELD_NONE;
@@ -1136,9 +1177,180 @@ bool QV4l2::trans_osd1()
     return true;   
 }
 
+bool QV4l2::video0_capture()
+{
+    qDebug()<<"video0_capture="<<endl;
+    IMGENC1_Params          params      = Ienc1_Params_DEFAULT;
+    IMGENC1_DynamicParams   dynParams   = Ienc1_DynamicParams_DEFAULT;
+    BufferGfx_Attrs         gfxAttrs    = BufferGfx_Attrs_DEFAULT;
+    Buffer_Attrs            bAttrs      = Buffer_Attrs_DEFAULT;
+    Time_Attrs              tAttrs      = Time_Attrs_DEFAULT;
+    Ienc1_Handle            hIe         = NULL;
+    Engine_Handle           hEngine     = NULL;
+    Time_Handle             hTime       = NULL;
+    Buffer_Handle           hOutBuf     = NULL;
+    Buffer_Handle           hInBuf      = NULL;
+    int                     inBufSize,outBufSize;
+    FILE                   *outFile     = NULL;
+    int                     ret         = Dmai_EOK;
+
+    qDebug()<<"Starting capture"<<endl;
+
+    CERuntime_init();
+    Dmai_init();
+
+    outFile = fopen("current_frame.jpg","wb");
+
+    if(outFile == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to open output file"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"open output file ok"<<endl;
+    }
+
+    if(setvbuf(outFile,vbufferOut,_IOFBF,sizeof(vbufferOut))!=0)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to setvbuf on output file descriptor"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"setvbuf on output file descriptor ok"<<endl;
+    }
+
+    hEngine = Engine_open("encode", NULL, NULL);
+
+    if(hEngine == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to open codec engine"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"open codec engine ok"<<endl;
+    }
+
+    qDebug()<<"Using output color format YUV420P"<<endl;
+    params.maxWidth=384;
+    params.maxHeight=384;
+    params.forceChromaFormat=XDM_YUV_420P;
+
+    dynParams.inputWidth=params.maxWidth;
+    dynParams.inputHeight=params.maxHeight;
+    dynParams.captureWidth=params.maxWidth;
+    dynParams.qValue=75;
+    qDebug()<<"Using input color format YUV420SP"<<endl;
+    dynParams.inputChromaFormat=XDM_YUV_420SP;
+
+    hIe = Ienc1_create(hEngine,"jpegenc",&params,&dynParams);
+
+    if(hIe == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create image encoder"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create image encoder ok"<<endl;
+    }
+
+    gfxAttrs.bAttrs.memParams.align = bAttrs.memParams.align = 128;
+    gfxAttrs.dim.width = 384;
+    gfxAttrs.dim.height = 384;
+    gfxAttrs.dim.lineLength = BufferGfx_calcLineLength(384,ColorSpace_YUV420PSEMI);
+    gfxAttrs.colorSpace = ColorSpace_YUV420PSEMI;
+
+
+    inBufSize = Ienc1_getInBufSize(hIe);
+
+    hInBuf = Buffer_create(Dmai_roundUp(inBufSize,128),BufferGfx_getBufferAttrs(&gfxAttrs));
+
+    if(hInBuf == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create contiguous input buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create contiguous input buffer ok"<<endl;
+    }
+
+    outBufSize = Ienc1_getOutBufSize(hIe);
+
+    hOutBuf = Buffer_create(Dmai_roundUp(outBufSize,128),&bAttrs);
+
+    if(outBufSize == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create contiguous input buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create contiguous input buffer ok"<<endl;
+    }
+
+    qDebug()<<"Reading input..."<<endl;
+
+    if((readFrame(hInBuf,capture_buffers[cap_buf.index].start))==-1)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to read frame data to input buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"Read frame data to input buffer ok"<<endl;
+    }
+
+    csayhello("what's up?");
+
+    qDebug()<<"Encoding image..."<<endl;
+    if(Ienc1_process(hIe,hInBuf,hOutBuf)<0)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to encode image buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"Encode image buffer OK"<<endl;
+    }
+
+    if(Buffer_getNumBytesUsed(hOutBuf))
+    {
+        if(fwrite(Buffer_getUserPtr(hOutBuf),Buffer_getNumBytesUsed(hOutBuf),1,outFile)!=1)
+        {
+            ret = Dmai_EFAIL;
+            qDebug()<<"Failed to write encoded image data to file"<<endl;
+            // TODO: handle cleanup
+        }
+        else
+        {
+            qDebug()<<"Write encoded image data to file ok"<<endl;
+        }
+    }
+
+    Buffer_delete(hOutBuf);
+    Buffer_delete(hInBuf);
+    Ienc1_delete(hIe);
+    Engine_close(hEngine);
+    fclose(outFile);
+
+    qDebug()<<"Capture done!"<<endl;
+}
+
 bool QV4l2::start_loop()
 {
-    v4l2_buffer buf;
+//    v4l2_buffer buf;
     char *displaybuffer = NULL;
     char *src = NULL;
     char *dest = NULL;
@@ -1148,12 +1360,12 @@ bool QV4l2::start_loop()
 
     while(1)
     {
-        CLEAR(buf);
-        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        buf.memory = V4L2_MEMORY_MMAP;
+        CLEAR(cap_buf);
+        cap_buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        cap_buf.memory = V4L2_MEMORY_MMAP;
 
         // determine ready buffer
-        if (-1 == ioctl(capture_fd, VIDIOC_DQBUF, &buf))
+        if (-1 == ioctl(capture_fd, VIDIOC_DQBUF, &cap_buf))
         {
             if (EAGAIN == errno)
                 continue;
@@ -1168,18 +1380,18 @@ bool QV4l2::start_loop()
             return false;
         }
 
-        src = (char *)capture_buffers[buf.index].start;
-
+        src = (char *)capture_buffers[cap_buf.index].start;
+        //src_ptr = (char *)capture_buffers[buf.index].start;
         //dst = (char *)calloc(294912, sizeof(char));
         //printf("Opps!\n");
         //printf("displaybuffer=%p\n",displaybuffer);
         dest = displaybuffer;
 
-        for(i=0 ; i < 384; i++)
+        for(i=0 ; i < 576; i++)
         {
-            memcpy(dest, src, 384*2);
-            src += 384*2;
-            dest += 384*2;
+            memcpy(dest, src, 384);
+            src += 384;
+            dest += 384;
         }
 
         //free(dst);
@@ -1188,7 +1400,7 @@ bool QV4l2::start_loop()
         //printf("Opps!!!\n");
         //display_bitmap_osd1();
 
-        if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &buf))
+        if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &cap_buf))
         {
             printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
         }
@@ -1299,3 +1511,7 @@ void QV4l2Thread::trans_osd1()
     pV4l2->trans_osd1();
 }
 
+void QV4l2Thread::video0_capture()
+{
+    pV4l2->video0_capture();
+}

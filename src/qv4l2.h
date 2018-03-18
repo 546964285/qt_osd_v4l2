@@ -50,6 +50,9 @@ public:
     int stop_capture(int vid_win);
     void * get_display_buffer(int vid_win);
     int put_display_buffer(int vid_win, void *addr);
+
+    bool video0_capture();
+
 private:
 
     struct buffer
@@ -61,6 +64,7 @@ private:
     unsigned int g_imgBufCount;
     buffer *vid0Buf;
     //unsigned int index;
+//    char *src_ptr;
 
     QString dev_name_capture;
     QString dev_name_rsz;
@@ -96,6 +100,10 @@ private:
     short yee_table[MAX_SIZE_YEE_LUT];
     int parse_yee_table(void);
     int xioctl(int hDev, int nType, void *pData);
+
+    char vbufferOut[20480];
+
+    v4l2_buffer cap_buf;
 };
 
 class QV4l2Thread : public QThread
@@ -115,6 +123,7 @@ private:
 public slots:
     void blank_osd1();
     void trans_osd1();
+    void video0_capture();
 };
 
 #endif // QV4L2_H

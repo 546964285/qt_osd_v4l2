@@ -47,6 +47,7 @@ private Q_SLOTS:
 
 Q_SIGNALS:
     void call_dialog();
+    void call_capture();
 };
 
 class TestDialog : public QDialog

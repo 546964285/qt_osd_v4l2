@@ -87,6 +87,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
 
     connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
+
+    connect(this, SIGNAL(call_capture()), &v4l2thread, SLOT(video0_capture()));
 }
 
 MainWindow::~MainWindow()
@@ -151,6 +153,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
     case Qt::Key_B:
         emit call_dialog();
+        break;
+
+    case Qt::Key_Z:
+        emit call_capture();
         break;
 
     default:
