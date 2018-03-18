@@ -1321,7 +1321,9 @@ int QV4l2::video0_capture()
     int px,py;
 
     int ret=0;
-    const char* out_file="current_frame.jpg";
+//    const char* out_file="current_frame.jpg";
+    QDateTime time = QDateTime::currentDateTime();
+    QString out_file=QString("DICM"+time.toString("yyMMddhhmmss")+".jpg");
 
     int in_w=384,in_h=384;
 
@@ -1336,7 +1338,7 @@ int QV4l2::video0_capture()
     fmt = av_guess_format("mjpeg", NULL, NULL);
     pFormatCtx->oformat = fmt;
     //Output URL
-    if (avio_open(&pFormatCtx->pb,(const char*)out_file, AVIO_FLAG_READ_WRITE) < 0){
+    if (avio_open(&pFormatCtx->pb,(const char*)out_file.toStdString().c_str(), AVIO_FLAG_READ_WRITE) < 0){
         printf("Couldn't open output file.");
         return -1;
     }
@@ -1358,7 +1360,7 @@ int QV4l2::video0_capture()
     pCodecCtx->time_base.num = 1;
     pCodecCtx->time_base.den = 30;
     //Output some information
-    av_dump_format(pFormatCtx, 0, (const char*)out_file, 1);
+    av_dump_format(pFormatCtx, 0, (const char*)out_file.toStdString().c_str(), 1);
 
     pCodec = avcodec_find_encoder(pCodecCtx->codec_id);
     if (!pCodec){

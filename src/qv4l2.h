@@ -27,6 +27,8 @@
 #include <QFile>
 #include <QImage>
 #include <QMessageBox>
+#include <QDateTime>
+#include <QString>
 #include <QCoreApplication>
 #include "qgximage.h"
 //#include "GxPublic.h"
