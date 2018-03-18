@@ -116,6 +116,8 @@ public:
     QV4l2Thread();
     ~QV4l2Thread();
 
+    bool capture_lock;
+
 protected:
     void run();
 

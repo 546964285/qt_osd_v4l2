@@ -1518,6 +1518,7 @@ void QV4l2Thread::trans_osd1()
 void QV4l2Thread::video0_capture()
 {
     int ret;
+    capture_lock=true;
     ret = pV4l2->video0_capture();
     if(ret == 0)
     {
