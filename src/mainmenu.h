@@ -11,6 +11,9 @@ class MainMenu : public QDialog
 public:
     MainMenu(QWidget *parent = 0);
 
+public slots:
+    void cppSlot(int index);
+
 private:
 
     QPushButton *button;

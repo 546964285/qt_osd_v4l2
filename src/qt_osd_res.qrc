@@ -6,5 +6,8 @@
         <file>images/capt3.png</file>
         <file>images/capt4.png</file>
         <file>images/capt5.png</file>
+        <file>images/recording.jpg</file>
+        <file>images/start_r.png</file>
+        <file>images/stop_r.png</file>
     </qresource>
 </RCC>

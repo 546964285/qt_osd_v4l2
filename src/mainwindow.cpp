@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 #include <iostream>
 #include "qbattery.h"
+#include "backplay.h"
 
 QObject * dstWnd;
 
