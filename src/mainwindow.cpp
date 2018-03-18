@@ -91,8 +91,17 @@ MainWindow::MainWindow(QWidget *parent) :
     capt_btn->setEnterPicture(QPixmap(":/images/capt3.png"));
     capt_btn->setLeavePicture(QPixmap(":/images/capt5.png"));
     //capt_btn->setGeometry(QRect(470,170,71,71));
-    capt_btn->set_X_Y_width_height(470,170,71,71);
+    capt_btn->set_X_Y_width_height(490,170,71,71);
 
+
+    record_btn=new Button(this);
+    record_btn->setButtonPicture(QPixmap(":/images/start_r.png"));
+    record_btn->setPressPicture(QPixmap(":/images/recording.jpg"));
+    record_btn->setReleasePicture(QPixmap(":/images/recording.jpg"));
+    record_btn->setEnterPicture(QPixmap(":/images/start_r.png"));
+    record_btn->setLeavePicture(QPixmap(":/images/stop_r.png"));
+    //capt_btn->setGeometry(QRect(470,170,71,71));
+    record_btn->set_X_Y_width_height(490,280,71,71);
 
     v4l2thread.capture_lock=false;
     v4l2thread.start();

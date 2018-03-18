@@ -40,6 +40,7 @@ private:
     QTimer* updateRTC_timer;
     QLabel * logoLabel;
     Button * capt_btn;
+    Button * record_btn;
 
 signals:
 

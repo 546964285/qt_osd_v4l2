@@ -30,4 +30,5 @@ QT += declarative
 OTHER_FILES += \
     src/highlight.qml \
     src/application.qml \
-    src/content/PetsModel.qml
+    src/content/PetsModel.qml \
+    src/gridview.qml
