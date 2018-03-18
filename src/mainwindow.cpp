@@ -98,10 +98,15 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 //    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
 //    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
+//    connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
 
     connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
 
     connect(this, SIGNAL(call_capture()), this, SLOT(capture()));
+    connect(this, SIGNAL(call_capture()), &v4l2thread, SLOT(video0_capture()));
+
+    connect(&v4l2thread,SIGNAL(capture_ok()),this,SLOT(capture_ok()));
+    connect(&v4l2thread,SIGNAL(capture_fail()),this,SLOT(capture_fail()));
 }
 
 MainWindow::~MainWindow()

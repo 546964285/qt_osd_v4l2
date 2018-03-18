@@ -6,7 +6,7 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += . src
 INCLUDEPATH += . src
-LIBS +=-lavutil -lavfilter
+LIBS +=-lavformat -lavcodec -lavutil -lavfilter
 QMAKE_CFLAGS += -g
 QMAKE_CXXFLAGS += -g
 

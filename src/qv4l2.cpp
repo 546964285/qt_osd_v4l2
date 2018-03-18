@@ -68,6 +68,8 @@ int in_height;
 //const char *filters_descr = "crop=384:384:0:0";
 const char *filters_descr = "crop=384:384";
 
+uchar* capt_p=NULL;
+
 unsigned char clip(qint32 val)
 {
     if(val > 255)
@@ -128,7 +130,7 @@ QV4l2::QV4l2()
     snprintf(args, sizeof(args),
             "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
             in_width,in_height,AV_PIX_FMT_YUYV422,
-            1, 25,1,1);
+            1, 30,1,1);
     int ret;
     ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
                                            args, NULL, filter_graph);
@@ -1301,174 +1303,152 @@ bool QV4l2::trans_osd1()
 
 int QV4l2::video0_capture()
 {
-//    qDebug()<<"video0_capture="<<endl;
-//    IMGENC1_Params          params      = Ienc1_Params_DEFAULT;
-//    IMGENC1_DynamicParams   dynParams   = Ienc1_DynamicParams_DEFAULT;
-//    BufferGfx_Attrs         gfxAttrs    = BufferGfx_Attrs_DEFAULT;
-//    Buffer_Attrs            bAttrs      = Buffer_Attrs_DEFAULT;
-//    Time_Attrs              tAttrs      = Time_Attrs_DEFAULT;
-//    Ienc1_Handle            hIe         = NULL;
-//    Engine_Handle           hEngine     = NULL;
-//    Time_Handle             hTime       = NULL;
-//    Buffer_Handle           hOutBuf     = NULL;
-//    Buffer_Handle           hInBuf      = NULL;
-//    int                     inBufSize,outBufSize;
-//    FILE                   *outFile     = NULL;
-//    int                     ret         = Dmai_EOK;
+    qDebug()<<"video0_capture="<<endl;
+    qDebug()<<"Starting capture"<<endl;
 
-//    qDebug()<<"Starting capture"<<endl;
+    AVFormatContext* pFormatCtx;
+    AVOutputFormat* fmt;
+    AVStream* video_st;
+    AVCodecContext* pCodecCtx;
+    AVCodec* pCodec;
 
-//    CERuntime_init();
-//    Dmai_init();
+    uint8_t* picture_buf;
+    AVFrame* picture;
+    AVPacket pkt;
+    int y_size;
+    int got_picture=0;
+    int size;
+    int px,py;
 
-//    outFile = fopen("current_frame.jpg","wb");
+    int ret=0;
+    const char* out_file="current_frame.jpg";
 
-//    if(outFile == NULL)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to open output file"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"open output file ok"<<endl;
-//    }
+    int in_w=384,in_h=384;
 
-//    if(setvbuf(outFile,vbufferOut,_IOFBF,sizeof(vbufferOut))!=0)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to setvbuf on output file descriptor"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"setvbuf on output file descriptor ok"<<endl;
-//    }
+    uchar * p_src_local=(uchar*)malloc(384*384*2);
 
-//    hEngine = Engine_open("encode", NULL, NULL);
-
-//    if(hEngine == NULL)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to open codec engine"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"open codec engine ok"<<endl;
-//    }
-
-//    qDebug()<<"Using output color format YUV420P"<<endl;
-//    params.maxWidth=384;
-//    params.maxHeight=384;
-//    params.forceChromaFormat=XDM_YUV_420P;
-
-//    dynParams.inputWidth=params.maxWidth;
-//    dynParams.inputHeight=params.maxHeight;
-//    dynParams.captureWidth=params.maxWidth;
-//    dynParams.qValue=75;
-//    qDebug()<<"Using input color format YUV420SP"<<endl;
-//    dynParams.inputChromaFormat=XDM_YUV_420SP;
-
-//    hIe = Ienc1_create(hEngine,"jpegenc",&params,&dynParams);
-
-//    if(hIe == NULL)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to create image encoder"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"create image encoder ok"<<endl;
-//    }
-
-//    gfxAttrs.bAttrs.memParams.align = bAttrs.memParams.align = 128;
-//    gfxAttrs.dim.width = 384;
-//    gfxAttrs.dim.height = 384;
-//    gfxAttrs.dim.lineLength = BufferGfx_calcLineLength(384,ColorSpace_YUV420PSEMI);
-//    gfxAttrs.colorSpace = ColorSpace_YUV420PSEMI;
+    av_register_all();
 
 
-//    inBufSize = Ienc1_getInBufSize(hIe);
+    qDebug()<<"opps!!"<<endl;
+    pFormatCtx = avformat_alloc_context();
+    //Guess format
+    fmt = av_guess_format("mjpeg", NULL, NULL);
+    pFormatCtx->oformat = fmt;
+    //Output URL
+    if (avio_open(&pFormatCtx->pb,(const char*)out_file, AVIO_FLAG_READ_WRITE) < 0){
+        printf("Couldn't open output file.");
+        return -1;
+    }
+    qDebug()<<"opps!!"<<endl;
+    video_st = avformat_new_stream(pFormatCtx, 0);
+    if (video_st==NULL){
+        return -1;
+    }
 
-//    hInBuf = Buffer_create(Dmai_roundUp(inBufSize,128),BufferGfx_getBufferAttrs(&gfxAttrs));
 
-//    if(hInBuf == NULL)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to create contiguous input buffer"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"create contiguous input buffer ok"<<endl;
-//    }
 
-//    outBufSize = Ienc1_getOutBufSize(hIe);
+    pCodecCtx = video_st->codec;
+    pCodecCtx->codec_id = fmt->video_codec;
+    pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+    pCodecCtx->pix_fmt = AV_PIX_FMT_YUVJ422P;
+    pCodecCtx->width = in_w;
+    pCodecCtx->height = in_h;
 
-//    hOutBuf = Buffer_create(Dmai_roundUp(outBufSize,128),&bAttrs);
+    pCodecCtx->time_base.num = 1;
+    pCodecCtx->time_base.den = 30;
+    //Output some information
+    av_dump_format(pFormatCtx, 0, (const char*)out_file, 1);
 
-//    if(outBufSize == NULL)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to create contiguous input buffer"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"create contiguous input buffer ok"<<endl;
-//    }
+    pCodec = avcodec_find_encoder(pCodecCtx->codec_id);
+    if (!pCodec){
+        printf("Codec not found.");
+        return -1;
+    }
+    if (avcodec_open2(pCodecCtx, pCodec,NULL) < 0){
+        printf("Could not open codec.");
+        return -1;
+    }
+    picture = av_frame_alloc();
+    size = avpicture_get_size(pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
+    picture_buf = (uint8_t *)av_malloc(size);
+    if (!picture_buf)
+    {
+        return -1;
+    }
 
-//    qDebug()<<"Reading input..."<<endl;
+    avpicture_fill((AVPicture *)picture, picture_buf, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height);
+    //Write Header
+    avformat_write_header(pFormatCtx,NULL);
 
-//    if((readFrame(hInBuf,capture_buffers[cap_buf.index].start))==-1)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to read frame data to input buffer"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"Read frame data to input buffer ok"<<endl;
-//    }
+    y_size = pCodecCtx->width * pCodecCtx->height;
+    av_new_packet(&pkt,y_size*3);
+    //Read YUV
+    if(pCodecCtx->pix_fmt==AV_PIX_FMT_YUVJ422P)
+    {
+//        uchar* p_y_src=(uchar*)capture_buffers[cap_buf.index].start;
+        memcpy(p_src_local,capt_p,384*384*2);
+        uchar* p_y_src=p_src_local;
+        uchar* p_u_src=p_y_src+1;
+        uchar* p_v_src=p_y_src+3;
 
-//    csayhello("what's up?");
+        uchar* p_y_dst=picture_buf;
+        uchar* p_u_dst=picture_buf+ y_size;
+        uchar* p_v_dst=picture_buf+ y_size*3/2;
 
-//    qDebug()<<"Encoding image..."<<endl;
-//    if(Ienc1_process(hIe,hInBuf,hOutBuf)<0)
-//    {
-//        ret = Dmai_EFAIL;
-//        qDebug()<<"Failed to encode image buffer"<<endl;
-//        // TODO: handle cleanup
-//    }
-//    else
-//    {
-//        qDebug()<<"Encode image buffer OK"<<endl;
-//    }
+        picture->data[0] = picture_buf;              // Y
+        picture->data[1] = picture_buf+ y_size;      // U
+        picture->data[2] = picture_buf+ y_size*3/2;  // V
 
-//    if(Buffer_getNumBytesUsed(hOutBuf))
-//    {
-//        if(fwrite(Buffer_getUserPtr(hOutBuf),Buffer_getNumBytesUsed(hOutBuf),1,outFile)!=1)
-//        {
-//            ret = Dmai_EFAIL;
-//            qDebug()<<"Failed to write encoded image data to file"<<endl;
-//            // TODO: handle cleanup
-//        }
-//        else
-//        {
-//            qDebug()<<"Write encoded image data to file ok"<<endl;
-//        }
-//    }
+        memset(picture_buf,0,y_size*2);
+        for(py=0;py<pCodecCtx->height;py++)
+        {
+            for(px=0;px<pCodecCtx->width;px+=2)
+            {
+                p_y_dst[0]=p_y_src[0];
+                p_y_dst[1]=p_y_src[2];
+                p_y_src+=4;
+                p_y_dst+=2;
 
-//    Buffer_delete(hOutBuf);
-//    Buffer_delete(hInBuf);
-//    Ienc1_delete(hIe);
-//    Engine_close(hEngine);
-//    fclose(outFile);
+                p_u_dst[0]=p_u_src[0];
+                p_v_dst[0]=p_v_src[0];
 
-//    qDebug()<<"Capture done!"<<endl;
-//    return 0;
+                p_u_src+=4;
+                p_v_src+=4;
+                p_u_dst+=1;
+                p_v_dst+=1;
+            }
+        }
+
+    }
+
+    //Encode
+    ret = avcodec_encode_video2(pCodecCtx, &pkt,picture, &got_picture);
+    if(ret < 0){
+        printf("Encode Error.\n");
+        return -1;
+    }
+    if (got_picture==1){
+        pkt.stream_index = video_st->index;
+        ret = av_write_frame(pFormatCtx, &pkt);
+    }
+
+    av_free_packet(&pkt);
+    //Write Trailer
+    av_write_trailer(pFormatCtx);
+
+    printf("Encode Successful.\n");
+
+    if (video_st){
+        avcodec_close(video_st->codec);
+        av_free(picture);
+        av_free(picture_buf);
+    }
+    avio_close(pFormatCtx->pb);
+    avformat_free_context(pFormatCtx);
+
+    qDebug()<<"Capture done!"<<endl;
+    return 0;
 }
 
 bool QV4l2::start_loop()
@@ -1568,6 +1548,7 @@ bool QV4l2::start_loop()
 
         p_rgb=dest;
         pYUV=src;
+        capt_p=src;
         for(i = 0; i < 384*384*2 / 4; i++)
         {
             y1 = *pYUV++ - 16;
