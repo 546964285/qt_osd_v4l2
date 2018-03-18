@@ -21,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QPalette  palette;
     //palette.setColor(QPalette::Background, QColor(0x00,0xff,0x00,0x00));
-    //palette.setColor(QPalette::Background, QColor(53,73,123));
-    palette.setColor(QPalette::Background, Qt::darkGray);
+    palette.setColor(QPalette::Background, QColor(53,73,123));
+    //palette.setColor(QPalette::Background, Qt::darkGray);
     setPalette(palette);
 
     // 设置窗体透明，需要注释掉setAutoFillBackground(true);
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    logoLabel->setScaledContents(true);
 //    logoLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
-    connect(ui->battery, SIGNAL(valueChanged(int)), ui->progressBar, SLOT(setValue(int)));
+//    connect(ui->battery, SIGNAL(valueChanged(int)), ui->progressBar, SLOT(setValue(int)));
 
     ui->battery->setValue(50);
 
@@ -79,13 +79,14 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
-    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
-
-    //v4l2thread.start();
+    v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 //    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
 //    connect(ui->pushButton_2, SIGNAL(clicked()), ui->battery, SLOT(subValue()));
+    connect(this, SIGNAL(call_dialog()), &v4l2thread, SLOT(blank_osd1()));
+
+    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
 }
 
 MainWindow::~MainWindow()
@@ -203,6 +204,7 @@ void MainWindow::UpdateRTC()
 TestDialog::TestDialog(QWidget *parent)
     : QDialog(parent)
 {
+    MainWindow * ptr = (MainWindow *)parentWidget();
     //setGeometry(QRect(400,100,480,180));
     setGeometry(QRect(0,0,640,480));
 
@@ -215,6 +217,7 @@ TestDialog::TestDialog(QWidget *parent)
 
     setLayout(VLayout);
 
+    connect(button,SIGNAL(clicked()),&(ptr->v4l2thread),SLOT(trans_osd1()));
     connect(button, SIGNAL(clicked()), this, SLOT(close()));
 }
 

@@ -5,7 +5,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QDateTime>
-//#include "qv4l2.h"
+#include "qv4l2.h"
 
 namespace Ui {
     class MainWindow;
@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    QV4l2Thread v4l2thread;
 
 private:
     Ui::MainWindow *ui;
@@ -32,7 +33,6 @@ private:
     QDateTime current_time;
     QString current_time_str;
     QTimer* updateRTC_timer;
-//    QV4l2Thread v4l2thread;
     QLabel * logoLabel;
 
 signals:
