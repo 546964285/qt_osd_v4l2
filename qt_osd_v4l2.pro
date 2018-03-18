@@ -14,3 +14,6 @@ HEADERS += mainwindow.h qgximage.h \
 FORMS += mainwindow.ui
 SOURCES += main.cpp mainwindow.cpp qgximage.cpp \
     qbattery.cpp
+
+RESOURCES += \
+    qt_osd_res.qrc

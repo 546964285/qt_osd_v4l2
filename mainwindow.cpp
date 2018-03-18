@@ -41,6 +41,12 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->pushButton->setFocusPolicy(Qt::NoFocus);
 //    ui->pushButton_2->setFocusPolicy(Qt::NoFocus);
 
+//    logoLabel = new QLabel(this);
+//    logoLabel->setPixmap(QPixmap(":/images/logo.png"));
+//    logoLabel->setGeometry(QRect(480,10,logoLabel->pixmap()->width(),logoLabel->pixmap()->height()));
+//    logoLabel->setScaledContents(true);
+//    logoLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
     connect(ui->battery, SIGNAL(valueChanged(int)), ui->progressBar, SLOT(setValue(int)));
 
     ui->battery->setValue(50);
@@ -49,7 +55,16 @@ MainWindow::MainWindow(QWidget *parent) :
     //current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss ddd");
     current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
     qDebug() << current_time_str << "-=-=-=-=-=-=-=-";
+
+    QFont font("Arial",12,QFont::Bold,false);
+//    ui->label_2->setText(current_time_str);
+    ui->label_2->setFont(font);
+    QPalette pe;
+    pe.setColor(QPalette::WindowText,Qt::white);
+    ui->label_2->setPalette(pe);
     ui->label_2->setText(current_time_str);
+    //ui->label_2->set
+    //ui->label_2->setText("<h2><i>Hello</i> ""<font color=white>Qt!</font></h2>");
 
     updateRTC_timer=new QTimer(this);
     updateRTC_timer->setInterval(50);

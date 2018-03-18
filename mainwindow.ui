@@ -30,19 +30,6 @@
      <string>TextLabel</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>30</y>
-      <width>101</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Battery</string>
-    </property>
-   </widget>
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
@@ -69,14 +56,33 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>470</x>
+      <x>460</x>
       <y>180</y>
-      <width>141</width>
-      <height>16</height>
+      <width>161</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
      <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>30</y>
+      <width>161</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="qt_osd_res.qrc">:/images/logo.png</pixmap>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
     </property>
    </widget>
   </widget>
@@ -95,6 +101,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="qt_osd_res.qrc"/>
+ </resources>
  <connections/>
 </ui>

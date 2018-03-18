@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDialog>
+#include <QLabel>
 #include <QDateTime>
 //#include "qv4l2.h"
 
@@ -32,6 +33,7 @@ private:
     QString current_time_str;
     QTimer* updateRTC_timer;
 //    QV4l2Thread v4l2thread;
+    QLabel * logoLabel;
 
 signals:
 
