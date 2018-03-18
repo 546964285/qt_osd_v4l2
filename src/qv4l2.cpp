@@ -37,8 +37,16 @@
 #include <ti/sdo/dmai/Dmai.h>
 #include <ti/sdo/dmai/Time.h>
 #include <ti/sdo/dmai/Buffer.h>
+#include <ti/sdo/dmai/Ccv.h>
+#include <ti/sdo/dmai/Cpu.h>
+#include <ti/sdo/dmai/BufTab.h>
+#include <ti/sdo/dmai/Capture.h>
+#include <ti/sdo/dmai/Framecopy.h>
 #include <ti/sdo/dmai/BufferGfx.h>
 #include <ti/sdo/dmai/ce/Ienc1.h>
+#include <ti/sdo/dmai/ce/Venc1.h>
+
+#include <mp4v2/mp4v2.h>
 
 #include <iostream>
 #include <QCoreApplication>
@@ -48,9 +56,151 @@
 //#include "qt.h"
 extern "C" {
     #include "jpegenc.h"
+    #include "MP4Encoder.h"
 }
 
+/* Align buffers to this cache line size (in bytes)*/
+#define BUFSIZEALIGN            128
+
+/* The input buffer height restriction */
+#define CODECHEIGHTALIGN       16
+
 using namespace std;
+
+
+VIDENC1_Params params    = Venc1_Params_DEFAULT;
+VIDENC1_DynamicParams dynParams = Venc1_DynamicParams_DEFAULT;
+BufferGfx_Attrs gfxAttrs  = BufferGfx_Attrs_DEFAULT;
+Buffer_Attrs bAttrs    = Buffer_Attrs_DEFAULT;
+Time_Attrs tAttrs    = Time_Attrs_DEFAULT;
+
+Engine_Handle          hEngine   = NULL;
+Venc1_Handle           hVe1      = NULL;
+int                     ret         = Dmai_EOK;
+Int                    inBufSize, outBufSize;
+ColorSpace_Type        colorSpace;
+Int                    numBufs;
+BufTab_Handle          hBufTab   = NULL;
+Buffer_Handle          hOutBuf   = NULL;
+Buffer_Handle          hInBuf      = NULL;
+Buffer_Handle          hFreeBuf  = NULL;
+Time_Handle            hTime     = NULL;
+Bool                   flushed   = FALSE;
+Bool                   mustExit  = FALSE;
+Int                    bufIdx;
+Int                    flushCntr = 1;
+MP4FileHandle hMP4File;
+
+Int dmacopydata(void * addr, Buffer_Handle hDstBuf)
+{
+    Framecopy_Attrs fcAttrs = Framecopy_Attrs_DEFAULT;
+    Framecopy_Handle hFc = NULL;
+    Buffer_Handle hSrcBuf = NULL;
+    BufferGfx_Dimensions dim;
+    fcAttrs.accel = 1;
+    int ret;
+
+////////////change the userptr to buffer_handle///
+    BufferGfx_Attrs gfxAttrs = BufferGfx_Attrs_DEFAULT;
+    gfxAttrs.bAttrs.reference = TRUE;
+    gfxAttrs.dim.width = 384;
+    gfxAttrs.dim.height = 384;
+    gfxAttrs.colorSpace = ColorSpace_YUV420PSEMI;
+    gfxAttrs.dim.lineLength = BufferGfx_calcLineLength(384,ColorSpace_YUV420PSEMI);
+    hSrcBuf = Buffer_create(221184,BufferGfx_getBufferAttrs(&gfxAttrs));
+    if(hSrcBuf == NULL)
+    {
+        printf("failed to create buffer\n");
+        return -1;
+    }
+    ret=Buffer_setUserPtr(hSrcBuf ,(Int8 *)addr);
+    if(ret!=0)
+    {
+        printf("ret = %d\n", ret);
+    }
+    //printf("Im here 2\n");
+    Buffer_setNumBytesUsed(hSrcBuf , 221184);
+///////////////////////////////////////////////////////////
+
+    hFc = Framecopy_create(&fcAttrs);
+    if (hFc == NULL)
+    {	printf("framecopy error \n");
+        goto exit;
+    }
+
+    BufferGfx_getDimensions(hSrcBuf,&dim);
+    dim.lineLength = Dmai_roundUp(dim.lineLength , 32);
+    BufferGfx_setDimensions(hSrcBuf,&dim);
+
+    if(Framecopy_config(hFc,hSrcBuf,hDstBuf)<0)
+    {
+        printf("framecopy config error\n");
+        goto exit;
+    }
+
+    if(Framecopy_execute(hFc,hSrcBuf,hDstBuf)<0)
+    {
+        printf("framecopy execute error \n");
+        goto exit;
+    }
+    return 0;
+
+exit:
+    if(hSrcBuf)
+    {	Buffer_delete(hSrcBuf);
+        return -1;
+    }
+return 0;
+}
+
+/******************************************************************************
+ * readFrame420SP
+ ******************************************************************************/
+Int readFrame420SP(Venc1_Handle hVe1, Buffer_Handle hBuf, void * addr, Int imageHeight)
+{
+//	    Int8 *yPtr = Buffer_getUserPtr(hBuf);
+//	    Int8 *cbcrPtr;
+//	    Int y;
+//
+//	    BufferGfx_Dimensions dim;
+//
+//	    BufferGfx_getDimensions(hBuf, &dim);
+//
+//	    /* Write Y plane */
+//	    for (y = 0; y < imageHeight; y++) {
+//	        if (fread(yPtr, dim.width, 1, outFile) != 1) {
+//	            fprintf(stderr,"Failed to read data from file\n");
+//	            return -1;
+//	        }
+//
+//	        yPtr += dim.lineLength;
+//	    }
+//
+//	    /* Join Cb to CbCr interleaved */
+//	    cbcrPtr = Buffer_getUserPtr(hBuf) + Buffer_getSize(hBuf) * 2 / 3;
+//	    for (y = 0; y < imageHeight / 2; y++) {
+//	        if (fread(cbcrPtr, dim.width, 1, outFile) != 1) {
+//	            fprintf(stderr,"Failed to read data from file\n");
+//	            return -1;
+//	        }
+//	        cbcrPtr += dim.lineLength;
+//	    }
+//
+//	    printf("Read 420SP frame size %d (%dx%d) from file\n",
+//	           (Int) (dim.width * 3 / 2 * imageHeight),
+//	           (Int) dim.width, (Int) imageHeight);
+
+    if(dmacopydata(addr,hBuf)!=0)
+    {
+        printf("dma copy error \n");
+        return -1;
+    }
+
+    Buffer_setNumBytesUsed(hBuf, Buffer_getSize(hBuf));
+
+    return 0;
+}
+
 
 // 0.构造函数
 QV4l2::QV4l2()
@@ -69,6 +219,8 @@ QV4l2::QV4l2()
     this->capture_buffers = NULL;
     this->g_imgBufCount = 3;
     get_osd_nod();
+
+    video_recording = false;
     printf("in QV4l2 constructor\n");
 }
 
@@ -1352,6 +1504,199 @@ int QV4l2::video0_capture()
     return 0;
 }
 
+int QV4l2::rcdstar()
+{
+    qDebug()<<"@ QV4l2::rcdstar()";
+
+
+    params    = Venc1_Params_DEFAULT;
+    dynParams = Venc1_DynamicParams_DEFAULT;
+    gfxAttrs  = BufferGfx_Attrs_DEFAULT;
+    bAttrs    = Buffer_Attrs_DEFAULT;
+    tAttrs    = Time_Attrs_DEFAULT;
+
+    hEngine   = NULL;
+    hVe1      = NULL;
+    ret         = Dmai_EOK;
+    hBufTab   = NULL;
+    hOutBuf   = NULL;
+
+    printf("Starting recording...\n");
+
+    CERuntime_init();
+    Dmai_init();
+
+    hMP4File = CreateMP4File("output.mp4",384,384,9000,30);
+    if (hMP4File == MP4_INVALID_FILE_HANDLE)
+    {
+        printf("open file fialed.\n");
+        //return NULL;
+    }
+//    else
+//    {
+//        printf("open file ok.\n");
+//    }
+    hEngine = Engine_open("encode", NULL, NULL);
+    if(hEngine == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to open codec engine @ rcdstar"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"open codec engine ok @ rcdstar"<<endl;
+    }
+
+
+    params.rateControlPreset = IVIDEO_NONE;
+    params.maxBitRate        = 2000000;
+
+    params.inputChromaFormat  = XDM_YUV_420SP;
+    params.maxWidth = 384;
+    params.maxHeight = 384;
+
+    params.maxInterFrameInterval = 1;
+    dynParams.targetBitRate      = params.maxBitRate;
+    dynParams.inputWidth         = params.maxWidth;
+    dynParams.inputHeight        = params.maxHeight;
+
+    /* Create the video encoder */
+    hVe1 = Venc1_create(hEngine, "h264enc", &params, &dynParams);
+    if(hVe1 == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create video encoder"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create video encoder ok"<<endl;
+    }
+
+    /* Ask the codec how much input data it needs */
+    inBufSize = Venc1_getInBufSize(hVe1);
+
+    /* Ask the codec how much space it needs for output data */
+    outBufSize = Venc1_getOutBufSize(hVe1);
+
+    colorSpace = ColorSpace_YUV420PSEMI;
+
+    /* Align buffers to cache line boundary */
+    gfxAttrs.bAttrs.memParams.align = bAttrs.memParams.align = BUFSIZEALIGN;
+
+    gfxAttrs.dim.width      = 384;
+    gfxAttrs.dim.height     = 384;
+    /* Calculate the buffer attributes */
+    gfxAttrs.dim.height = Dmai_roundUp(gfxAttrs.dim.height, CODECHEIGHTALIGN);
+
+    gfxAttrs.dim.lineLength = BufferGfx_calcLineLength(384, colorSpace);
+    gfxAttrs.colorSpace     = colorSpace;
+
+    if(inBufSize < 0)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create contiguous input buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create contiguous input buffer ok"<<endl;
+    }
+
+    /* Number of input buffers required */
+    if(params.maxInterFrameInterval>1) {
+        /* B frame support */
+        numBufs = params.maxInterFrameInterval;
+    }
+    else {
+        numBufs = 1;
+    }
+
+    /* Create a table of input buffers of the size requested by the codec */
+    hBufTab = BufTab_create(numBufs, Dmai_roundUp(inBufSize, BUFSIZEALIGN),
+            BufferGfx_getBufferAttrs(&gfxAttrs));
+
+    if (hBufTab == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to allocate contiguous buffers"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"allocate contiguous buffers ok"<<endl;
+    }
+
+    /* Set input buffer table */
+    Venc1_setBufTab(hVe1, hBufTab);
+
+    /* Create the output buffer for encoded video data */
+    hOutBuf = Buffer_create(Dmai_roundUp(outBufSize, BUFSIZEALIGN), &bAttrs);
+    if(hOutBuf == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to create contiguous buffer"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"create contiguous buffer ok"<<endl;
+    }
+
+    video_recording = true;
+}
+
+int QV4l2::rcdstop()
+{
+    qDebug()<<"@ QV4l2::rcdstop()";
+
+    video_recording = false;
+
+    /* Clean up the application */
+    if (hOutBuf) {
+        Buffer_delete(hOutBuf);
+    }
+
+//	    if (hReconBuf) {
+//	        Buffer_delete(hReconBuf);
+//	    }
+
+    if (hVe1) {
+        Venc1_delete(hVe1);
+    }
+
+    if (hBufTab) {
+        BufTab_delete(hBufTab);
+    }
+
+    if (hEngine) {
+        Engine_close(hEngine);
+    }
+
+//    if (inFile) {
+//        fclose(inFile);
+//    }
+
+//    if (outFile) {
+//        fclose(outFile);
+//    }
+
+//	    if (reconFile) {
+//	        fclose(reconFile);
+//	    }
+
+    if (hTime) {
+        Time_delete(hTime);
+    }
+
+
+    //free(buffer);
+    CloseMP4File(hMP4File);
+
+    printf("End of video encoding.\n");
+}
+
 bool QV4l2::start_loop()
 {
 //    v4l2_buffer buf;
@@ -1409,11 +1754,108 @@ bool QV4l2::start_loop()
             printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
         }
 
+        if(video_recording ==true)
+        {
+            encloop((void *)capture_buffers[cap_buf.index].start);
+        }
+
 //        printf("Opps!!\n");
     }
     ret = stop_capture(capture_fd);
     if (ret < 0)
         printf("Error in VIDIOC_STREAMOFF:capture\n");
+}
+
+void QV4l2::encloop(void * addr)
+{
+    int writelen = 0;
+
+    qDebug()<<"i am here !!!!!!!!!!!";
+
+    /* Get a buffer for input */
+    hInBuf = BufTab_getFreeBuf(hBufTab);
+    if(hInBuf == NULL)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to get a free contiguous buffer from BufTab"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"get a free contiguous buffer from BufTab ok"<<endl;
+    }
+
+    if (readFrame420SP(hVe1, hInBuf, addr, 384) < 0)
+    {
+        ret = Dmai_EFAIL;
+        qDebug()<<"Failed to readFrame420SP"<<endl;
+        // TODO: handle cleanup
+    }
+    else
+    {
+        qDebug()<<"readFrame420SP ok"<<endl;
+    }
+
+    if (mustExit == TRUE)
+    {
+        if(!(params.maxInterFrameInterval>1))
+        {
+            printf("... exiting \n");
+            // TODO: handle cleanup
+        }
+        printf("\n... exiting with flush (B-frame stream) \n");
+        flushCntr = params.maxInterFrameInterval-1;
+        flushed = TRUE;
+        Venc1_flush(hVe1);
+    }
+
+    for(bufIdx = 0; bufIdx < flushCntr; bufIdx++)
+    {
+        /* Make sure the whole buffer is used for input */
+        BufferGfx_resetDimensions(hInBuf);
+
+        /* Encode the video buffer */
+        if (Venc1_process(hVe1, hInBuf, hOutBuf) < 0) {
+            ret = Dmai_EFAIL;
+            fprintf(stderr,"Failed to encode video buffer\n");
+            //goto cleanup;
+        }
+        /* if encoder generated output content, free released buffer */
+        if (Buffer_getNumBytesUsed(hOutBuf)>0) {
+            /* Get free buffer */
+            hFreeBuf = Venc1_getFreeBuf(hVe1);
+            /* Free buffer */
+            BufTab_freeBuf(hFreeBuf);
+        }
+        /* if encoder did not generate output content */
+        else {
+            /* if non B frame sequence */
+            /* encoder skipped frame probably exceeding target bitrate */
+            if (params.maxInterFrameInterval<=1) {
+                /* free buffer */
+                printf(" Encoder generated 0 size frame\n");
+                BufTab_freeBuf(hInBuf);
+            }
+        }
+        /* Write the encoded frame to the file system */
+        if (Buffer_getNumBytesUsed(hOutBuf)) {
+            writelen = WriteH264Data(hMP4File,(unsigned char*)Buffer_getUserPtr(hOutBuf),Buffer_getNumBytesUsed(hOutBuf));
+            if(writelen<=0)
+            {
+                printf("writelen<0\n");
+                //return 2;
+            }
+        }
+        /* If the codec flushing completed, exit main thread */
+        if (flushed) {
+            /* Free dummy input buffer used for flushing process() calls */
+            printf("freeing dummy input buffer ... \n");
+            BufTab_freeBuf(hInBuf);
+            //break;
+        }
+
+        //return 0;
+    }
 }
 
 void * QV4l2::get_display_buffer(int vid_win)
@@ -1527,5 +1969,20 @@ void QV4l2Thread::video0_capture()
     else
     {
         emit capture_fail();
+    }
+}
+
+void QV4l2Thread::rcdstarstop()
+{
+    qDebug() <<"in slot rcdstarstop() @ QV4l2Thread";
+    if(video_recording==false)
+    {
+        qDebug() << "recording is false now @ QV4l2Thread";
+        pV4l2->rcdstop();
+    }
+    else
+    {
+        qDebug() << "recording is true now @ QV4l2Thread";
+        pV4l2->rcdstar();
     }
 }

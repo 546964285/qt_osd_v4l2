@@ -54,6 +54,11 @@ public:
     int put_display_buffer(int vid_win, void *addr);
 
     int video0_capture();
+    int rcdstar();
+    int rcdstop();
+
+    void encloop(void * addr);
+    bool video_recording;
 
 private:
 
@@ -117,6 +122,7 @@ public:
     ~QV4l2Thread();
 
     bool capture_lock;
+    bool video_recording;
 
 protected:
     void run();
@@ -128,6 +134,7 @@ public slots:
     void blank_osd1();
     void trans_osd1();
     void video0_capture();
+    void rcdstarstop();
 
 Q_SIGNALS:
     void capture_ok();

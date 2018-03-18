@@ -48,7 +48,7 @@ public slots:
 //    void raising_value();
 
     void call_testdialog();
-
+    void rcdstarstop();
     void capture_ok();
     void capture_fail();
     void capture();
@@ -59,6 +59,7 @@ private Q_SLOTS:
 Q_SIGNALS:
     void call_dialog();
     void call_capture();
+    void call_rcdstarstop();
 };
 
 //class TestDialog : public QDialog

@@ -98,12 +98,13 @@ MainWindow::MainWindow(QWidget *parent) :
     record_btn->setButtonPicture(QPixmap(":/images/start_r.png"));
     record_btn->setPressPicture(QPixmap(":/images/recording.jpg"));
     record_btn->setReleasePicture(QPixmap(":/images/recording.jpg"));
-    record_btn->setEnterPicture(QPixmap(":/images/start_r.png"));
+    record_btn->setEnterPicture(QPixmap(":/images/recording.jpg"));
     record_btn->setLeavePicture(QPixmap(":/images/stop_r.png"));
     //capt_btn->setGeometry(QRect(470,170,71,71));
     record_btn->set_X_Y_width_height(490,280,71,71);
 
     v4l2thread.capture_lock=false;
+    v4l2thread.video_recording=false;
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
@@ -118,11 +119,32 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&v4l2thread,SIGNAL(capture_ok()),this,SLOT(capture_ok()));
     connect(&v4l2thread,SIGNAL(capture_fail()),this,SLOT(capture_fail()));
+
+    connect(this, SIGNAL(call_rcdstarstop()), this, SLOT(rcdstarstop()));
+    connect(this, SIGNAL(call_rcdstarstop()), &v4l2thread, SLOT(rcdstarstop()));
 }
 
 MainWindow::~MainWindow()
 {
 
+}
+
+void MainWindow::rcdstarstop()
+{
+    qDebug() <<"in slot rcdstarstop() @ mainwindow";
+
+    if(v4l2thread.video_recording==false)
+    {
+        v4l2thread.video_recording=true;
+        record_btn->setIcon(QIcon(*record_btn->enterPicture));
+        qDebug() << "recording is true now";
+    }
+    else
+    {
+        v4l2thread.video_recording=false;
+        record_btn->setIcon(QIcon(*record_btn->leavePicture));
+        qDebug() << "recording is false now";
+    }
 }
 
 void MainWindow::call_testdialog()
@@ -253,6 +275,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         {
             emit call_capture();
         }
+        break;
+
+    case Qt::Key_X:
+        emit call_rcdstarstop();
         break;
 
     default:
