@@ -112,8 +112,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::call_testdialog()
 {
-    TestDialog dialog(this);
-    dialog.exec();
+//    TestDialog dialog(this);
+//    dialog.exec();
+
+    qDebug() <<"in slot call_testdialog()" << endl;
+
+    MainMenu mainmenu(this);
+    mainmenu.exec();
 }
 
 //void MainWindow::capture_ok()
@@ -287,23 +292,23 @@ void MainWindow::UpdateRTC()
 //    ui->progressBar->setValue(90);
 //}
 
-TestDialog::TestDialog(QWidget *parent)
-    : QDialog(parent)
-{
-    MainWindow * ptr = (MainWindow *)parentWidget();
-    //setGeometry(QRect(400,100,480,180));
-    setGeometry(QRect(0,0,640,480));
-
-    button = new QPushButton("Quit");
-    button->setEnabled(true);
-    button->show();
-
-    QVBoxLayout *VLayout = new QVBoxLayout;
-    VLayout->addWidget(button);
-
-    setLayout(VLayout);
-
-    connect(button,SIGNAL(clicked()),&(ptr->v4l2thread),SLOT(trans_osd1()));
-    connect(button, SIGNAL(clicked()), this, SLOT(close()));
-}
+//TestDialog::TestDialog(QWidget *parent)
+//    : QDialog(parent)
+//{
+//    MainWindow * ptr = (MainWindow *)parentWidget();
+//    //setGeometry(QRect(400,100,480,180));
+//    setGeometry(QRect(0,0,640,480));
+//
+//    button = new QPushButton("Quit");
+//    button->setEnabled(true);
+//    button->show();
+//
+//    QVBoxLayout *VLayout = new QVBoxLayout;
+//    VLayout->addWidget(button);
+//
+//    setLayout(VLayout);
+//
+//    connect(button,SIGNAL(clicked()),&(ptr->v4l2thread),SLOT(trans_osd1()));
+//    connect(button, SIGNAL(clicked()), this, SLOT(close()));
+//}
 
