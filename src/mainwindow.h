@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QDateTime>
 #include "qv4l2.h"
+#include "Button.h"
 
 namespace Ui {
     class MainWindow;
@@ -34,6 +35,7 @@ private:
     QString current_time_str;
     QTimer* updateRTC_timer;
     QLabel * logoLabel;
+    Button * capt_btn;
 
 signals:
 

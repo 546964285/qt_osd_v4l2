@@ -79,6 +79,16 @@ MainWindow::MainWindow(QWidget *parent) :
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
 
+    capt_btn=new Button(this);
+    capt_btn->setButtonPicture(QPixmap(":/images/capt1.png"));
+    capt_btn->setPressPicture(QPixmap(":/images/capt2.png"));
+    capt_btn->setReleasePicture(QPixmap(":/images/capt3.png"));
+    capt_btn->setEnterPicture(QPixmap(":/images/capt4.png"));
+    capt_btn->setLeavePicture(QPixmap(":/images/capt5.png"));
+    //capt_btn->setGeometry(QRect(470,170,71,71));
+    capt_btn->set_X_Y_width_height(470,170,71,71);
+
+
     v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
