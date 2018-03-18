@@ -8,6 +8,7 @@
 //#include <QThread>
 #include "qv4l2.h"
 #include "Button.h"
+#include "mainmenu.h"
 
 namespace Ui {
     class MainWindow;
@@ -59,17 +60,17 @@ Q_SIGNALS:
     void call_capture();
 };
 
-class TestDialog : public QDialog
-{
-    Q_OBJECT
+//class TestDialog : public QDialog
+//{
+//    Q_OBJECT
 
-public:
-    TestDialog(QWidget *parent = 0);
+//public:
+//    TestDialog(QWidget *parent = 0);
 
-private:
+//private:
 
-    QPushButton *button;
-};
+//    QPushButton *button;
+//};
 
 
 class SleeperThread : public QThread
