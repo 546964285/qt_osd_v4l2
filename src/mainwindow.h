@@ -5,8 +5,8 @@
 #include <QDialog>
 #include <QLabel>
 #include <QDateTime>
-#include <QThread>
-//#include "qv4l2.h"
+//#include <QThread>
+#include "qv4l2.h"
 #include "Button.h"
 
 namespace Ui {
@@ -19,7 +19,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-//    QV4l2Thread v4l2thread;
+    QV4l2Thread v4l2thread;
 
     void msecSleep(int msec);
 

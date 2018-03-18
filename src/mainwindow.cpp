@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     capt_btn->set_X_Y_width_height(470,170,71,71);
 
 
-    //v4l2thread.start();
+    v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
     //connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(call_testdialog()));
 //    connect(ui->pushButton, SIGNAL(clicked()), ui->battery, SLOT(addValue()));
