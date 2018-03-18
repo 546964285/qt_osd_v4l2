@@ -261,7 +261,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 //        {
 //            capt_btn->keyReleaseEvent(event);
 //        }
-        break;
+//        break;
     default:
         QWidget::keyReleaseEvent(event);
         break;

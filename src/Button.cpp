@@ -97,40 +97,40 @@ void Button::resizeit(int w , int h)
 }
 
 
-void Button::keyPressEvent(QKeyEvent *event)
-{
-    int keyValue;
-    keyValue=event->key();
-
-//    qDebug() <<"pressed keyValue= "<< keyValue << endl;
-
-    switch (keyValue) {
-
-    case Qt::Key_Z:
-        this -> setIcon (QIcon(*pressPicture));
-        break;
-
-    default:
-        QWidget::keyPressEvent(event);
-        break;
-    }
-}
-
-void Button::keyReleaseEvent(QKeyEvent *event)
-{
-    int keyValue;
-    keyValue=event->key();
-
- //   qDebug() <<"pressed keyValue= "<< keyValue << endl;
-
-    switch (keyValue) {
-
-    case Qt::Key_Z:
-        this -> setIcon(QIcon(*releasePicture));
-        break;
-
-    default:
-        QWidget::keyPressEvent(event);
-        break;
-    }
-}
+//void Button::keyPressEvent(QKeyEvent *event)
+//{
+//    int keyValue;
+//    keyValue=event->key();
+//
+////    qDebug() <<"pressed keyValue= "<< keyValue << endl;
+//
+//    switch (keyValue) {
+//
+//    case Qt::Key_Z:
+//        this -> setIcon (QIcon(*pressPicture));
+//        break;
+//
+//    default:
+//        QWidget::keyPressEvent(event);
+//        break;
+//    }
+//}
+//
+//void Button::keyReleaseEvent(QKeyEvent *event)
+//{
+//    int keyValue;
+//    keyValue=event->key();
+//
+// //   qDebug() <<"pressed keyValue= "<< keyValue << endl;
+//
+//    switch (keyValue) {
+//
+//    case Qt::Key_Z:
+//        this -> setIcon(QIcon(*releasePicture));
+//        break;
+//
+//    default:
+//        QWidget::keyPressEvent(event);
+//        break;
+//    }
+//}
