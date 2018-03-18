@@ -3,6 +3,7 @@
 
 Button::Button(QWidget *parent) : QPushButton(parent)
 {
+        //保存图片成员初始化
         buttonPicture = new QPixmap();
         pressPicture = new QPixmap();
         releasePicture = new QPixmap();
@@ -10,9 +11,11 @@ Button::Button(QWidget *parent) : QPushButton(parent)
         enterPicture = new QPixmap();
         leavePicture = new QPixmap();
 
+        //关闭按钮的默认显示
         this -> setFlat(true);
         this->setFocusPolicy(Qt::NoFocus);
 
+        //初始化flag
         flag=false;
 }
 
@@ -35,12 +38,12 @@ void Button::setReleasePicture(QPixmap pic)
 
 void Button::setEnterPicture(QPixmap pic)
 {
-    *enterPicture = pic;
+        *enterPicture = pic;
 }
 
 void Button::setLeavePicture(QPixmap pic)
 {
-    *leavePicture = pic;
+        *leavePicture = pic;
 }
 
 void Button::set_X_Y_width_height(int x, int y, int width, int height)
@@ -51,7 +54,7 @@ void Button::set_X_Y_width_height(int x, int y, int width, int height)
 
 void Button::mouseDoubleClickEvent(QMouseEvent *event)
 {
-
+        //null
 }
 
 void Button::mousePressEvent (QMouseEvent *event)
@@ -61,8 +64,9 @@ void Button::mousePressEvent (QMouseEvent *event)
 
 void Button::mouseMoveEvent(QMouseEvent *event)
 {
-
+        //null
 }
+
 
 void Button::mouseReleaseEvent (QMouseEvent *event)
 {
@@ -74,6 +78,8 @@ void Button::enterEvent(QEvent *)
 {
     this->setIcon(QIcon(*enterPicture));
     flag=true;
+    //  this->resizeit();
+
 }
 
 void Button::leaveEvent(QEvent *)
@@ -89,5 +95,6 @@ void Button::resizeit(int w , int h)
     this ->setIconSize(QSize(w, h));
 
 }
+
 
 

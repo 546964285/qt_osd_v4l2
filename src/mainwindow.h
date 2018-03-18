@@ -10,7 +10,8 @@
 #include "Button.h"
 #include "mainmenu.h"
 
-namespace Ui {
+namespace Ui
+{
     class MainWindow;
 }
 
@@ -42,6 +43,8 @@ private:
     Button * capt_btn;
     Button * record_btn;
 
+     int GetI2CValue();
+
 signals:
 
 public slots:
@@ -59,6 +62,7 @@ Q_SIGNALS:
     void call_capture();
     void call_rcdstarstop();
 };
+
 
 class SleeperThread : public QThread
 {

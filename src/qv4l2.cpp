@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>         // exit
-#include <fcntl.h>          // for open()
-#include <unistd.h>         // for close()
-#include <malloc.h>         // clloc
-#include <getopt.h>	    // getopt_long()
+#include <stdlib.h>     // exit
+#include <fcntl.h>      // for open()
+#include <unistd.h>     // for close()
+#include <malloc.h>     // clloc
+#include <getopt.h>     // getopt_long()
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -15,7 +15,7 @@
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 
-#include <asm/types.h>	    // for videodev2.h
+#include <asm/types.h>   // for videodev2.h
 
 #include <linux/videodev.h>
 #include <linux/videodev2.h>
@@ -54,42 +54,43 @@
 
 #include <QDebug>
 //#include "qt.h"
-extern "C" {
+
+extern "C"
+{
     #include "jpegenc.h"
     #include "MP4Encoder.h"
 }
 
 /* Align buffers to this cache line size (in bytes)*/
-#define BUFSIZEALIGN            128
-
+#define BUFSIZEALIGN           128
 /* The input buffer height restriction */
 #define CODECHEIGHTALIGN       16
 
 using namespace std;
 
 
-VIDENC1_Params params    = Venc1_Params_DEFAULT;
-VIDENC1_DynamicParams dynParams = Venc1_DynamicParams_DEFAULT;
-BufferGfx_Attrs gfxAttrs  = BufferGfx_Attrs_DEFAULT;
-Buffer_Attrs bAttrs    = Buffer_Attrs_DEFAULT;
-Time_Attrs tAttrs    = Time_Attrs_DEFAULT;
+VIDENC1_Params params               =   Venc1_Params_DEFAULT;
+VIDENC1_DynamicParams dynParams     =   Venc1_DynamicParams_DEFAULT;
+BufferGfx_Attrs gfxAttrs            =   BufferGfx_Attrs_DEFAULT;
+Buffer_Attrs bAttrs                 =   Buffer_Attrs_DEFAULT;
+Time_Attrs tAttrs                   =   Time_Attrs_DEFAULT;
 
 Engine_Handle          hEngine   = NULL;
 Venc1_Handle           hVe1      = NULL;
-int                     ret         = Dmai_EOK;
+int                     ret      = Dmai_EOK;
 Int                    inBufSize, outBufSize;
 ColorSpace_Type        colorSpace;
 Int                    numBufs;
 BufTab_Handle          hBufTab   = NULL;
 Buffer_Handle          hOutBuf   = NULL;
-Buffer_Handle          hInBuf      = NULL;
+Buffer_Handle          hInBuf    = NULL;
 Buffer_Handle          hFreeBuf  = NULL;
 Time_Handle            hTime     = NULL;
 Bool                   flushed   = FALSE;
 Bool                   mustExit  = FALSE;
 Int                    bufIdx;
 Int                    flushCntr = 1;
-MP4FileHandle hMP4File;
+MP4FileHandle          hMP4File;
 
 Int dmacopydata(void * addr, Buffer_Handle hDstBuf)
 {
@@ -210,14 +211,14 @@ QV4l2::QV4l2()
     // MMAP      V4L2_CAP_ASYNCIO    把内核空间内存映射到用户空间内存地址上操作,一直占用内核空间
     // USERPTR   V4L2_CAP_STREAMING  程序员在用户空间分配内存，由v4l2驱动直接把数据填充到指定内存中,这个最好
     
-    this->dev_name_capture = "/dev/video0";
-    this->dev_name_rsz = "/dev/davinci_resizer";
-    this->dev_name_prev = "/dev/davinci_previewer";
-    this->dev_name_osd0 = "/dev/fb0";
-    this->dev_name_osd1 = "/dev/fb2";
-    this->dev_name_vid0 = "/dev/video2";
-    this->capture_buffers = NULL;
-    this->g_imgBufCount = 3;
+    this->dev_name_capture  = "/dev/video0";
+    this->dev_name_rsz      = "/dev/davinci_resizer";
+    this->dev_name_prev     = "/dev/davinci_previewer";
+    this->dev_name_osd0     = "/dev/fb0";
+    this->dev_name_osd1     = "/dev/fb2";
+    this->dev_name_vid0     = "/dev/video2";
+    this->capture_buffers   = NULL;
+    this->g_imgBufCount     = 3;
     get_osd_nod();
 
     video_recording = false;
@@ -235,19 +236,21 @@ int QV4l2::parse_yee_table(void)
         FILE *fp;
 
         fp = fopen(YEE_TABLE_FILE, "r");
-        if (fp == NULL) {
+        if (fp == NULL)
+        {
                 printf("Error in opening file %s\n", YEE_TABLE_FILE);
                 goto out;
         }
 
-        for (i = 0; i < MAX_SIZE_YEE_LUT; i++) {
+        for (i = 0; i < MAX_SIZE_YEE_LUT; i++)
+        {
                 fscanf(fp, "%d", &val);
                 printf("%d,", val);
                 yee_table[i] = val & 0x1FF;
         }
         printf("\n");
         if (i != MAX_SIZE_YEE_LUT)
-                goto clean_file;
+        goto clean_file;
         ret = 0;
 clean_file:
         fclose(fp);
@@ -461,7 +464,7 @@ bool QV4l2::open_capture_device()
             wb.ofst_b = 0;
             mod_param.len = sizeof(struct prev_wb);
             mod_param.param = &wb;
-                }
+        }
         else if(cap.module_id == PREV_LUM_ADJ)
         {
             printf("cap.module_id == PREV_LUM_ADJ\n");

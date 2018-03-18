@@ -30,10 +30,16 @@ private:
     void drawBattery(QPainter* painter);
     void drawNum(QPainter* painter);
 private:
+
+//    QTimer* updateTimer;
+    //bool    m_bReverse;
     qreal   m_headWidth;
+
+//    qreal   m_currentValue;
     QRectF  m_batteryRect;
 	
 private Q_SLOTS:
+//    void UpdateGraph();
 
 Q_SIGNALS:
     void valueChanged(int value);

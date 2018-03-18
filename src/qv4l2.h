@@ -70,6 +70,8 @@ private:
     buffer * capture_buffers;
     unsigned int g_imgBufCount;
     buffer *vid0Buf;
+    //unsigned int index;
+//    char *src_ptr;
 
     QString dev_name_capture;
     QString dev_name_rsz;

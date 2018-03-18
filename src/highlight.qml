@@ -50,32 +50,39 @@ Rectangle {
 
     // Define a delegate component.  A component will be
     // instantiated for each visible item in the list.
-    Component {
+    Component
+    {
         id: petDelegate
-        Item {
+        Item
+        {
             id: wrapper
             width: 640; height: 55
-            Column {
+            Column
+            {
                 Text { text: 'Name: ' + name }
                 Text { text: 'Type: ' + type }
                 Text { text: 'Age: ' + age }
             }
             // indent the item if it is the current item
-            states: State {
+            states: State
+            {
                 name: "Current"
                 when: wrapper.ListView.isCurrentItem
                 PropertyChanges { target: wrapper; x: 20 }
             }
-            transitions: Transition {
+            transitions: Transition
+            {
                 NumberAnimation { properties: "x"; duration: 200 } 
             }
         }
     }
 
     // Define a highlight with customised movement between items.
-    Component {
+    Component
+    {
         id: highlightBar
-        Rectangle {
+        Rectangle
+        {
             width: 640; height: 50
             color: "#FFFF88"
             y: listView.currentItem.y;
@@ -83,7 +90,8 @@ Rectangle {
         }
     }
 
-    ListView {
+    ListView
+    {
         id: listView
         width: 640; height: parent.height
 
