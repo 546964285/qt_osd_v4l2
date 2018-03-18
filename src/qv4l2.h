@@ -21,6 +21,8 @@
 #include <video/davinci_osd.h>
 
 #include <QThread>
+#include <QDateTime>
+#include <QString>
 //#include <QEvent>
 
 #define YEE_TABLE_FILE "EE_Table.txt"

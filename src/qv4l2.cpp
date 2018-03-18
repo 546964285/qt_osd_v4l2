@@ -1199,7 +1199,10 @@ int QV4l2::video0_capture()
     CERuntime_init();
     Dmai_init();
 
-    outFile = fopen("current_frame.jpg","wb");
+    QDateTime time = QDateTime::currentDateTime();
+    QString out_file=QString("DICM"+time.toString("yyMMddhhmmss")+".jpg");
+
+    outFile = fopen(out_file.toStdString().c_str(),"wb");
 
     if(outFile == NULL)
     {
