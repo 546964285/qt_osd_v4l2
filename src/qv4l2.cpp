@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>         // exit
-#include <fcntl.h>		// for open()
-#include <unistd.h>     // for close()
+#include <fcntl.h>          // for open()
+#include <unistd.h>         // for close()
 #include <malloc.h>         // clloc
-#include <getopt.h>		// getopt_long()
+#include <getopt.h>	    // getopt_long()
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -15,7 +15,7 @@
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 
-#include <asm/types.h>		// for videodev2.h
+#include <asm/types.h>	    // for videodev2.h
 
 #include <linux/videodev.h>
 #include <linux/videodev2.h>

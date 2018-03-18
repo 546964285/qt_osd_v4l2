@@ -12,7 +12,6 @@ public:
 
 public:
     void paintEvent(QPaintEvent *);
-//    void paintEvent();
 
 private:
 

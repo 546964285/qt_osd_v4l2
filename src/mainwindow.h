@@ -45,8 +45,6 @@ private:
 signals:
 
 public slots:
-//    void raising_value();
-
     void call_testdialog();
     void rcdstarstop();
     void capture_ok();
@@ -61,19 +59,6 @@ Q_SIGNALS:
     void call_capture();
     void call_rcdstarstop();
 };
-
-//class TestDialog : public QDialog
-//{
-//    Q_OBJECT
-
-//public:
-//    TestDialog(QWidget *parent = 0);
-
-//private:
-
-//    QPushButton *button;
-//};
-
 
 class SleeperThread : public QThread
 {
