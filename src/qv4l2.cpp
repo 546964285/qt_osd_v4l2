@@ -94,7 +94,7 @@ Int dmacopydata(void * addr, Buffer_Handle hDstBuf)
     Framecopy_Attrs fcAttrs = Framecopy_Attrs_DEFAULT;
     Framecopy_Handle hFc    = NULL;
     Buffer_Handle hSrcBuf   = NULL;
-    BufferGfx_Dimensions    dim;
+    BufferGfx_Dimensions      dim;
     fcAttrs.accel = 1;
     int ret;
 
@@ -255,7 +255,7 @@ out:
         return ret;//若读取失败
 }
 
-// 对指定设备进行特定操作, 返回0成功, -1失败;
+// 对指定设备进行特定操作, 返回 0成功, -1失败;
 int QV4l2::xioctl(int hDev, int nType, void *pData)
 {
     int res;
@@ -303,29 +303,26 @@ bool QV4l2::open_capture_device()
     struct stat st;
 
     oper_mode_1 = IMP_MODE_CONTINUOUS;
-    resizer_fd = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
-    if(-1 == resizer_fd)
+    resizer_fd  = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
+    if(-1 == resizer_fd)//打开失败
     {
         printf("open resizer failed\n");
         close(resizer_fd);
         return -1;
     }
-
-    if(-1 == ioctl(resizer_fd, RSZ_S_OPER_MODE, &oper_mode_1))
+    if(-1 == ioctl(resizer_fd, RSZ_S_OPER_MODE, &oper_mode_1))//设置默认配置
     {
-        printf("S etting default configuration failed\n");
+        printf("Setting default configuration failed\n");
         return -1;
     }
-
-    if(-1 == ioctl(resizer_fd, RSZ_G_OPER_MODE, &oper_mode_1))
+    if(-1 == ioctl(resizer_fd, RSZ_G_OPER_MODE, &oper_mode_1))//获取默认配置
     {
-        printf("G etting default configuration failed\n");
+        printf("Getting default configuration failed\n");
         return -1;
     }
-
     if (oper_mode_1 == user_mode_1)
     {
-        printf("RESIZER: Operating mode changed successfully to Continuous");
+        printf("RESIZER: Operating mode changed successfully to Continuous");//调整器改变成功
     }
 
     rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
@@ -437,13 +434,11 @@ bool QV4l2::open_capture_device()
         {
             break;
         }
-
         // find the defaults for this module
-
         strcpy(mod_param.version,cap.version);
         mod_param.module_id = cap.module_id;
         // try set parameter for this module
-        if(cap.module_id == PREV_WB)
+        if(cap.module_id == PREV_WB)//色彩增益
         {
             printf("cap.module_id == PREV_WB\n");
             bzero((void *)&wb, sizeof (struct prev_wb));
@@ -461,28 +456,28 @@ bool QV4l2::open_capture_device()
             mod_param.len = sizeof(struct prev_wb);
             mod_param.param = &wb;
         }
-        else if(cap.module_id == PREV_LUM_ADJ)
+        else if(cap.module_id == PREV_LUM_ADJ)//亮度
         {
             printf("cap.module_id == PREV_LUM_ADJ\n");
             bzero((void *)&lum_adj, sizeof (struct prev_lum_adj));
-                        lum_adj.brightness = 0;
-                        lum_adj.contrast = 20;
-                        mod_param.len = sizeof (struct prev_lum_adj);
-                        mod_param.param = &lum_adj;
+              lum_adj.brightness = 0;//////////////////////////////////////亮度
+              lum_adj.contrast = 20;///////////////////////////////////////对比度
+            mod_param.len = sizeof (struct prev_lum_adj);
+            mod_param.param = &lum_adj;
         }
-        else if (cap.module_id == PREV_GAMMA)
+        else if (cap.module_id == PREV_GAMMA)//Gamma值
         {
             printf("Setting gamma for %s\n", cap.module_name);
             bzero((void *)&gamma, sizeof (struct prev_gamma));
             gamma.bypass_r = 1;
             gamma.bypass_b = 1;
             gamma.bypass_g = 1;
-            gamma.tbl_sel = IPIPE_GAMMA_TBL_RAM;
+            gamma.tbl_sel  = IPIPE_GAMMA_TBL_RAM;
             gamma.tbl_size = IPIPE_GAMMA_TBL_SZ_512;
             mod_param.len = sizeof (struct prev_gamma);
             mod_param.param = &gamma;
         }
-        else if (cap.module_id == PREV_YEE)
+        else if (cap.module_id == PREV_YEE)//图像锐化
         {
             printf("Setting Edge Enhancement for %s\n", cap.module_name);
             bzero((void *)&yee, sizeof (struct prev_yee));
@@ -493,15 +488,15 @@ bool QV4l2::open_capture_device()
             //yee.merge_meth = IPIPE_YEE_ABS_MAX;
             yee.merge_meth = IPIPE_YEE_EE_ES;
             yee.hpf_shft = 6; // 5, 10
-            //yee.hpf_coef_00 = 8;
-            //yee.hpf_coef_01 = 2;
+            //yee.hpf_coef_00 =  8;
+            //yee.hpf_coef_01 =  2;
             //yee.hpf_coef_02 = -2;
-            //yee.hpf_coef_10 = 2;
-            //yee.hpf_coef_11 = 0;
+            //yee.hpf_coef_10 =  2;
+            //yee.hpf_coef_11 =  0;
             //yee.hpf_coef_12 = -1;
             //yee.hpf_coef_20 = -2;
             //yee.hpf_coef_21 = -1;
-            //yee.hpf_coef_22 = 0;
+            //yee.hpf_coef_22 =  0;
             yee.hpf_coef_00 = 84,
             yee.hpf_coef_01 = (-8 & 0x3FF),
             yee.hpf_coef_02 = (-4 & 0x3FF),
@@ -528,7 +523,6 @@ bool QV4l2::open_capture_device()
         }
         else
         {
-            // using defaults
             printf("Setting default for %s\n", cap.module_name);
             mod_param.param = NULL;
         }
@@ -654,7 +648,7 @@ bool QV4l2::init_capture_device()
     struct v4l2_pix_format *pFmt = &v4l2Fmt.fmt.pix;
 //    pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
     pFmt->pixelformat = V4L2_PIX_FMT_NV12;
-    pFmt->width = 384;
+    pFmt->width  = 384;
     pFmt->height = 384;
     if(xioctl(capture_fd, VIDIOC_S_FMT, &v4l2Fmt) == -1)
     {
@@ -714,9 +708,9 @@ bool QV4l2::init_capture_mmap()
 {
     // 建立1个空的视频缓冲区队列,返回的v4l2ReqBufs.count是实际队列长度
     CLEAR (CapReqBufs);
-    CapReqBufs.count = g_imgBufCount;
-    CapReqBufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    CapReqBufs.memory = V4L2_MEMORY_MMAP;
+    CapReqBufs.count  =  g_imgBufCount;
+    CapReqBufs.type   =  V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    CapReqBufs.memory =  V4L2_MEMORY_MMAP;
     if(xioctl(capture_fd, VIDIOC_REQBUFS, &CapReqBufs) == -1)
     {
         printf("VIDIOC_REQBUFS failed.\n");
@@ -881,10 +875,16 @@ bool QV4l2::init_display_device()//初始化显示设备
     CLEAR(crop);
 
     crop.type     =  V4L2_BUF_TYPE_VIDEO_OUTPUT;
-    crop.c.height =  384;
-    crop.c.width  =  384;
-    crop.c.top    =  48; //视频显示位置//////  （640-384）/2=128  就到中间了/////////////////////////////////////////////////////////////////
-    crop.c.left   =  48; //视频显示位置//////  （480-384）/2=48   就到中间了////////////////////////////////////////////////////////////////
+
+    crop.c.height =  384;//因旋转了270度，所以这里为宽度
+    crop.c.width  =  384;//高度
+    crop.c.top    =  48; //视频显示位置//////  （640-384）/2=128  就到中间了//////左边距
+    crop.c.left   =  48; //视频显示位置//////  （480-384）/2=48   就到中间了//////上边距
+
+    //crop.c.height =  384;
+    //crop.c.width  =  384;
+    //crop.c.top    =  48; //视频显示位置//////  （640-384）/2=128  就到中间了//////////////////
+    //crop.c.left   =  48; //视频显示位置//////  （480-384）/2=48   就到中间了//////////////////
 
     ret = ioctl(vid0_fd, VIDIOC_S_CROP, &crop);
     if (ret < 0)
@@ -915,7 +915,6 @@ bool QV4l2::init_display_device()//初始化显示设备
         printf("\tdispheight = %d\n\tdisppitch = %d\n\tdispwidth = %d\n", dispheight, disppitch, dispwidth);
         printf("\timagesize = %d\n", fmt.fmt.pix.sizeimage);
     }
-
     return true;
 }
 
@@ -963,7 +962,7 @@ bool QV4l2::init_display_mmap()//共享内存
         }
 
         vid0Buf[i].length = buf.length;
-        vid0Buf[i].start = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, vid0_fd, buf.m.offset);
+        vid0Buf[i].start  = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, vid0_fd, buf.m.offset);
         printf("buffer:%d phy:%x mmap:%p length:%d\n",buf.index,buf.m.offset,vid0Buf[i].start,buf.length);
 
         if (MAP_FAILED == vid0Buf[i].start)
@@ -1333,7 +1332,7 @@ bool QV4l2::trans_osd1()
 
 int QV4l2::video0_capture()//拍照函数
 {
-    qDebug()<<"video0_capture="<<endl;
+    qDebug()<<"video0_capture function start"<<endl;
     IMGENC1_Params          params      = Ienc1_Params_DEFAULT;
     IMGENC1_DynamicParams   dynParams   = Ienc1_DynamicParams_DEFAULT;
     BufferGfx_Attrs         gfxAttrs    = BufferGfx_Attrs_DEFAULT;
@@ -1348,20 +1347,11 @@ int QV4l2::video0_capture()//拍照函数
     FILE                   *outFile     = NULL;
     int                     ret         = Dmai_EOK;
 
-    qDebug()<<"Starting capture"<<endl;
-
     CERuntime_init();
     Dmai_init();
-
-    //QDateTime time = QDateTime::currentDateTime();
-
-    //QString out_file=QString("/media/mmcblk0p1/DCIM/"+m_PictureNoToString+".jpg");//照片存放路径
-    QString out_file=QString(m_StrNewFolderPath + m_PictureNoToString + ".jpg");//照片存放路径
-
-    qDebug()<< "Picture out_file :" << out_file;
-    //QString out_file=QString("/media/mmcblk0p1/DCIM/"+time.toString("yyMMddhhmmss")+".jpg");//照片存放路径
-
-    outFile = fopen(out_file.toStdString().c_str(),"wb");
+    QString PictureOutFile=QString(m_StrNewFolderPath + m_PictureNoToString + ".jpg");//照片存放路径
+    qDebug()<< "New Picture Out File name is" << PictureOutFile;
+    outFile = fopen(PictureOutFile.toStdString().c_str(),"wb");
 
     if(outFile == NULL)
     {
@@ -1401,11 +1391,11 @@ int QV4l2::video0_capture()//拍照函数
     qDebug()<<"Using output color format YUV420P"<<endl;
     params.maxWidth  = 384;
     params.maxHeight = 384;
-    params.forceChromaFormat=XDM_YUV_420P;
+    params.forceChromaFormat = XDM_YUV_420P;
 
-    dynParams.inputWidth=params.maxWidth;
-    dynParams.inputHeight=params.maxHeight;
-    dynParams.captureWidth=params.maxWidth;
+    dynParams.inputWidth  = params.maxWidth;
+    dynParams.inputHeight = params.maxHeight;
+    dynParams.captureWidth= params.maxWidth;
     dynParams.qValue=75;
     qDebug()<<"Using input color format YUV420SP"<<endl;
     dynParams.inputChromaFormat=XDM_YUV_420SP;
@@ -1506,9 +1496,9 @@ int QV4l2::video0_capture()//拍照函数
     Engine_close(hEngine);
     fclose(outFile);
 
-    qDebug()<<"Capture done!"<<endl;
+    qDebug()<<"Capture done!"<<endl;//拍照成功
 
-    /////////////////////////////////////////////////////////////////////////////照片编号王文广//////////////
+    /////////////////////////////////////////////////////////////////////照片或者视频编号++王文广////////////
     m_PictureNo=m_PictureNo+1;
     m_PictureNoToString= QString::number(m_PictureNo, 10); //数字转字符串
     if(m_PictureNo<10)
@@ -1555,18 +1545,18 @@ int QV4l2::rcdstar()//录像
     CERuntime_init();
     Dmai_init();
 
-    //hMP4File = CreateMP4File("output.mp4",384,384,9000,30);
-    hMP4File = CreateMP4File("/media/mmcblk0p1/DCIM/output2.mp4",384,384,9000,30);
+    QString MP4OutFile=QString(m_StrNewFolderPath + m_PictureNoToString + ".mp4");//视频存放路径
+    qDebug()<< "New MP4OutFile name is" << MP4OutFile;
+    hMP4File = CreateMP4File(MP4OutFile.toStdString().c_str(),384,384,9000,30);
+
+    //hMP4File = CreateMP4File("/media/mmcblk0p1/DCIM/output2.mp4",384,384,9000,30);
 
     if (hMP4File == MP4_INVALID_FILE_HANDLE)
     {
         printf("open file fialed.\n");
         //return NULL;
     }
-    //else
-    //{
-    //    printf("open file ok.\n");
-    //}
+
     hEngine = Engine_open("encode", NULL, NULL);
     if(hEngine == NULL)
     {
@@ -1579,10 +1569,10 @@ int QV4l2::rcdstar()//录像
         qDebug()<<"open codec engine ok @ rcdstar"<<endl;
     }
 
-    params.rateControlPreset = IVIDEO_NONE;
-    params.maxBitRate        = 2000000;
+    params.rateControlPreset     = IVIDEO_NONE;
+    params.maxBitRate            = 2000000;
 
-    params.inputChromaFormat  = XDM_YUV_420SP;
+    params.inputChromaFormat     = XDM_YUV_420SP;
     params.maxWidth  = 384;
     params.maxHeight = 384;
 
@@ -1676,6 +1666,29 @@ int QV4l2::rcdstar()//录像
     }
 
     video_recording = true;
+
+    /////////////////////////////////////////////////////////////////////照片或者视频编号++王文广////////////
+    m_PictureNo=m_PictureNo+1;
+    m_PictureNoToString= QString::number(m_PictureNo, 10); //数字转字符串
+    if(m_PictureNo<10)
+    {
+        m_PictureNoToString="000"+m_PictureNoToString;
+    }
+    else if(m_PictureNo<100)
+    {
+        m_PictureNoToString="00"+m_PictureNoToString;
+    }
+    else if(m_PictureNo<1000)
+    {
+        m_PictureNoToString="0"+m_PictureNoToString;
+    }
+    else if(m_PictureNo>9999)//超出范围
+    {
+        m_PictureNo=0;
+    }
+
+    m_PictureNoToString=m_PowerOnTimeStr+m_PictureNoToString;
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 int QV4l2::rcdstop()

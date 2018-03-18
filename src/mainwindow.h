@@ -49,7 +49,7 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
-    int GetI2CValue();
+    void GetI2CValue();
 
     QDateTime current_time;
     QString current_time_str;
@@ -64,6 +64,11 @@ private:
     bool key_flg;
 
     QString g_PowerOnTimeStr;
+
+    int m_bq40z50;
+    int m_Battery;
+    int m_Charge;
+    int m_OnOff;
 
 public slots:
     void call_testdialog();

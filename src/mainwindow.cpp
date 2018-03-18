@@ -182,33 +182,53 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
     press = false;
 }
 
-int MainWindow::GetI2CValue()
+//地址0xF0（240）--------0为单片机与bq40z50通信异常，1为正常
+//地址0xF1（241）--------电池电量0-100%
+//地址0xF2（242）--------1为放电，2为充电
+//地址0xF3（243）--------1为开机请求，2为关机请求
+//地址0xF4（244）--------2为应用程序保存完数据，可以断电
+
+
+void MainWindow::GetI2CValue()
 {
     int fd2,ret;
-    char *i2c_device = "/dev/bq40z50_control";
+    char *i2c_device = "/dev/stm32_control";
     unsigned char buffer[2];
 
     printf("opening %s!\n",i2c_device);
     if((fd2 = open(i2c_device,O_RDWR|O_NDELAY))<0)
-    printf("APP open %s failed\n",i2c_device);
-    else{
-             printf("APP open %s success!\n",i2c_device);
-    }
-    buffer[0] = 13;//13为电量
-    printf("buffer0 is-------------------- %d \n",buffer[0]);
+        printf("APP open I2C %s failed\n",i2c_device);
+    else
+        printf("APP open I2C %s success!\n",i2c_device);
+
+    buffer[0] = 240;
     ret = read(fd2,buffer,2);
     if(ret<0)
-    printf("i2c read failed!\n");
-    else
-    printf("i2c read success!\n");
+        printf("i2c read failed!\n");
+    m_bq40z50=buffer[0];
+    printf("Address 0xF0 , m_bq40z50 State is %d!\n",m_bq40z50);
 
-    printf("Buffer[0] is %d!\n",buffer[0]);
-    printf("Buffer[1] is %d!\n",buffer[1]);
-    printf("i2c read reg 0x09 data is %d!\n",buffer[1]*256+buffer[0]);
+    buffer[0] = 241;
+    ret = read(fd2,buffer,2);
+    if(ret<0)
+        printf("i2c read failed!\n");
+    m_Battery=buffer[0];
+    printf("Address 0xF1 , m_Battery Value is %d!\n",m_Battery);
 
-    //close(fd2);
-    ret=buffer[1]*256+buffer[0];
-    return ret;
+    buffer[0] = 242;
+    ret = read(fd2,buffer,2);
+    if(ret<0)
+        printf("i2c read failed!\n");
+    m_Charge=buffer[0];
+    printf("Address 0xF2 , m_Charge State is %d!\n",m_Charge);
+
+    buffer[0] = 243;
+    ret = read(fd2,buffer,2);
+    if(ret<0)
+        printf("i2c read failed!\n");
+    m_OnOff=buffer[0];
+    printf("Address 0xF3 , m_OnOff State is %d!\n",m_OnOff);
+
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -267,7 +287,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     {
         case Qt::Key_Return:
         {
-            ui->battery->setValue(GetI2CValue());
+            GetI2CValue();
+            ui->battery->setValue(m_Battery);
         }
         break;
         case Qt::Key_M:
@@ -311,6 +332,16 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
         {
             ui->label->setText(tr(""));//清除控件文字内容
             emit SShowOsd1();//显示Osd1视频窗口 信号
+
+            QString month="3",day="4",year="5",hour="13",min="14";
+            QString strkk;
+
+            strkk = "date -s " + month + "/" + day + "/" + year;//设置时间，还有问题
+            system(strkk.toLatin1().data());
+            strkk = "date -s " + hour + ":" + min + ":" + "00";//这句可以
+            system(strkk.toLatin1().data());
+            system("clock -w"); //强制写入到CMOS
+
         }
         break;
         case Qt::Key_P:  //录像

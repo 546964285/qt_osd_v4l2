@@ -55,8 +55,8 @@ DlgPicFileThread::DlgPicFileThread()
 }
 void DlgPicFileThread::run()
 {
-   QImage Image;
-   int LabelN;
+   QImage  Image;
+   int     LabelN;
    QString FilePath;
    while(1)
    {
@@ -363,7 +363,7 @@ void DlgPicFile::FilePictureScan(QString path)//文件扫描
 
         QDateTime current_time = QDateTime::currentDateTime();//获取当前时间
         QString PowerOnTimeStr = current_time.toString("yy");//转成字符串
-        PowerOnTimeStr=PowerOnTimeStr[1];
+        PowerOnTimeStr = PowerOnTimeStr[1];
         PowerOnTimeStr = PowerOnTimeStr + current_time.toString("MMdd");//转成字符串 yMMdd
         qDebug()<< "CreatFolder PowerOnTimeStr.... :" << PowerOnTimeStr;
 
