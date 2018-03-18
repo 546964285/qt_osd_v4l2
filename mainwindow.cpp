@@ -45,6 +45,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->battery->setValue(50);
 
+    current_time = QDateTime::currentDateTime();
+    //current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss ddd");
+    current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
+    qDebug() << current_time_str << "-=-=-=-=-=-=-=-";
+    ui->label_2->setText(current_time_str);
+
+    updateRTC_timer=new QTimer(this);
+    updateRTC_timer->setInterval(50);
+    connect(updateRTC_timer,SIGNAL(timeout()),this,SLOT(UpdateRTC()));
+    updateRTC_timer->start();
 
 //    ui->label->move(48,48);
     //ui->label->resize(640, 480);
@@ -53,6 +63,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 //    ui->label->setMask(QRect(0,0,384,384));
     //this->setWindowOpacity(0);
+
+    connect(this, SIGNAL(call_dialog()), this, SLOT(call_testdialog()));
 
     //v4l2thread.start();
     std::cout << "thread 1 running" << std::endl;
@@ -121,6 +133,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         }
         break;
 
+    case Qt::Key_B:
+        emit call_dialog();
+        break;
+
     default:
         QWidget::keyPressEvent(event);
         break;
@@ -155,6 +171,14 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
+void MainWindow::UpdateRTC()
+{
+    current_time = QDateTime::currentDateTime();
+    current_time_str = current_time.toString("yyyy-MM-dd hh:mm:ss");
+    //qDebug() << current_time_str;
+    ui->label_2->setText(current_time_str);
+    //update();
+}
 
 //void MainWindow::raising_value()
 //{
@@ -164,7 +188,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 TestDialog::TestDialog(QWidget *parent)
     : QDialog(parent)
 {
-    setGeometry(QRect(400,100,480,180));
+    //setGeometry(QRect(400,100,480,180));
+    setGeometry(QRect(0,0,640,480));
 
     button = new QPushButton("Quit");
     button->setEnabled(true);

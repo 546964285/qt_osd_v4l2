@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QDialog>
+#include <QDateTime>
 //#include "qv4l2.h"
 
 namespace Ui {
@@ -27,6 +28,9 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    QDateTime current_time;
+    QString current_time_str;
+    QTimer* updateRTC_timer;
 //    QV4l2Thread v4l2thread;
 
 signals:
@@ -36,6 +40,11 @@ public slots:
 
     void call_testdialog();
 
+private Q_SLOTS:
+    void UpdateRTC();
+
+Q_SIGNALS:
+    void call_dialog();
 };
 
 class TestDialog : public QDialog
