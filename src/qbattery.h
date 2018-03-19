@@ -24,22 +24,21 @@ protected:
         return QSize(200,120);
     }
 
-
 private:
     void drawFrame(QPainter* painter);
     void drawBattery(QPainter* painter);
     void drawNum(QPainter* painter);
 private:
 
-//    QTimer* updateTimer;
+    //QTimer* updateTimer;
     //bool    m_bReverse;
     qreal   m_headWidth;
 
-//    qreal   m_currentValue;
+    //qreal   m_currentValue;
     QRectF  m_batteryRect;
 	
 private Q_SLOTS:
-//    void UpdateGraph();
+    //void UpdateGraph();
 
 Q_SIGNALS:
     void valueChanged(int value);

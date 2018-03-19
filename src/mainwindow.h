@@ -1,3 +1,4 @@
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -10,7 +11,20 @@
 #include "Button.h"
 #include "mainmenu.h"
 
-namespace Ui {
+#include <sys/types.h>//以下几行是为了张冰冰调用驱动所用
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <stdlib.h>
+#include <QDebug>
+
+#include "dlgf1.h"
+#include "dlgoff.h"
+#include "dlgbackground.h"
+
+namespace Ui
+{
     class MainWindow;
 }
 
@@ -35,6 +49,8 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    void GetI2CValue();
+
     QDateTime current_time;
     QString current_time_str;
     QTimer* updateRTC_timer;
@@ -42,36 +58,40 @@ private:
     Button * capt_btn;
     Button * record_btn;
 
-signals:
+    DlgF1          dlgf1;//定义第一级对话框对象，用于工作时候显示
+    DlgBackGround  dlgbackground;
+
+    bool key_flg;
+
+    QString g_PowerOnTimeStr;
+
+    int m_bq40z50;
+    int m_Battery;
+    int m_Charge;
+    int m_OnOff;
 
 public slots:
-//    void raising_value();
-
     void call_testdialog();
-
+    void rcdstarstop();
     void capture_ok();
     void capture_fail();
     void capture();
+    void SlotShowMainWindow();
+    void SlotSendNewFolderPath(QString StrNewFolderPath);
 
 private Q_SLOTS:
     void UpdateRTC();
 
 Q_SIGNALS:
-    void call_dialog();
-    void call_capture();
+    void    call_dialog();
+    void    call_capture();
+    void    call_rcdstarstop();
+    void    SHideOsd1();
+    void    SShowOsd1();
+    void    SSendNewFolderPath(QString StrNewFolderPath);
+    void    SFreshDlgf1Window();
+    void    SKeyPressed();
 };
-
-//class TestDialog : public QDialog
-//{
-//    Q_OBJECT
-
-//public:
-//    TestDialog(QWidget *parent = 0);
-
-//private:
-
-//    QPushButton *button;
-//};
 
 
 class SleeperThread : public QThread

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DlgVidFile</class>
+ <widget class="QDialog" name="DlgVidFile">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QLabel" name="Label1">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label1</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label9">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>300</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label9</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label8">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>300</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label8</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label2">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>20</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label2</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label7">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>300</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label7</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="LabelTextNum">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>430</y>
+     <width>141</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>LabelTextNum</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label5">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>160</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label5</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label3">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>20</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label3</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="LabelTextNo">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>430</y>
+     <width>141</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>LabelTextNo</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label4">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label4</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Label6">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>160</y>
+     <width>181</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label6</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

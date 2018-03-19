@@ -69,7 +69,7 @@ Rectangle {
             y: 0
             width: 80
             height: 80
-            source: "../images/settings1.png"
+            source: "images/settings1.png"
         }
         Text{
             wrapMode:Text.WordWrap
@@ -93,51 +93,51 @@ Rectangle {
         ListModel {
             id: appModel
             ListElement {
-                name: QT_TR_NOOP("回放")
+                name: QT_TR_NOOP("backplay")
                 icon: "images/AudioPlayer_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("时间设置")
+                name: QT_TR_NOOP("time")
                 icon: "images/VideoPlayer_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("语言设置")
+                name: QT_TR_NOOP("language")
                 icon: "images/Camera_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("录像设置")
+                name: QT_TR_NOOP("vedio")
                 icon: "images/DateBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("色彩")
+                name: QT_TR_NOOP("color")
                 icon: "images/EMail_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("待机时间")
+                name: QT_TR_NOOP("standby")
                 icon: "images/TodoList_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("恢复默认")
+                name: QT_TR_NOOP("restore")
                 icon: "images/AddressBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("存储卡")
+                name: QT_TR_NOOP("storage")
                 icon: "images/AddressBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("保留")
+                name: QT_TR_NOOP("reserved")
                 icon: "images/AddressBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("保留")
+                name: QT_TR_NOOP("reserved")
                 icon: "images/AddressBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("保留")
+                name: QT_TR_NOOP("reserved")
                 icon: "images/AddressBook_48.png"
             }
             ListElement {
-                name: QT_TR_NOOP("查看版本")
+                name: QT_TR_NOOP("version")
                 icon: "images/AddressBook_48.png"
             }
 

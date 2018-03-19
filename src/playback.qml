@@ -1,4 +1,5 @@
-import QtQuick 1.0
+//import QtQuick 1.0
+import Qt 4.7
 
 Rectangle {
     id: mainWindow
@@ -81,7 +82,7 @@ Rectangle {
                 id: myIcon
                 y: 20; anchors.horizontalCenter: parent.horizontalCenter
                 width: 100; height: 100
-                source: "photos/"+modelData+".jpg"
+                source: "../photos/"+modelData+".jpg"
             }
             Text {
                 anchors { top: myIcon.bottom; horizontalCenter: parent.horizontalCenter }
@@ -170,7 +171,7 @@ Rectangle {
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
             width: 480; height: 480;
-            source: "photos/"+detailsView.currentImage+".jpg"
+            source: "../photos/"+detailsView.currentImage+".jpg"
         }
 
         MouseArea {

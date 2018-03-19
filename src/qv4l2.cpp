@@ -1675,7 +1675,7 @@ void QV4l2Thread::run()
 //    pV4l2->open_display_device();
 //    pV4l2->init_display_device();
 //    pV4l2->init_display_mmap();
-    pV4l2->start_loop();
+    //pV4l2->start_loop();
 }
 
 void QV4l2Thread::blank_osd1()
