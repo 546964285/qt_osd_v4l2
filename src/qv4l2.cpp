@@ -65,7 +65,6 @@ extern "C"
 
 using namespace std;
 
-
 VIDENC1_Params params               =   Venc1_Params_DEFAULT;
 VIDENC1_DynamicParams dynParams     =   Venc1_DynamicParams_DEFAULT;
 BufferGfx_Attrs gfxAttrs            =   BufferGfx_Attrs_DEFAULT;
@@ -97,7 +96,6 @@ Int dmacopydata(void * addr, Buffer_Handle hDstBuf)
     BufferGfx_Dimensions      dim;
     fcAttrs.accel = 1;
     int ret;
-
 ////////////change the userptr to buffer_handle///////////
     BufferGfx_Attrs gfxAttrs  = BufferGfx_Attrs_DEFAULT;
     gfxAttrs.bAttrs.reference = TRUE;
@@ -304,11 +302,18 @@ bool QV4l2::open_capture_device()
 
     oper_mode_1 = IMP_MODE_CONTINUOUS;
     resizer_fd  = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
-    if(-1 == resizer_fd)//打开失败
+    if(-1 == resizer_fd)//第一次打开失败
     {
-        printf("open resizer failed\n");
+        printf("first open resizer failed\n");
         close(resizer_fd);
-        return -1;
+
+        resizer_fd  = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
+        if(-1 == resizer_fd)//第二次打开失败
+        {
+            printf("second open resizer failed\n");
+            close(resizer_fd);
+            return -1;
+        }
     }
     if(-1 == ioctl(resizer_fd, RSZ_S_OPER_MODE, &oper_mode_1))//设置默认配置
     {
@@ -358,6 +363,7 @@ bool QV4l2::open_capture_device()
         printf("setting default configuration for continuous mode failed\n");
         return -1;
     }
+
 
     oper_mode_1 = IMP_MODE_CONTINUOUS; // same as resizer
     preview_fd = open(dev_name_prev.toStdString().c_str(), O_RDWR);
@@ -429,9 +435,11 @@ bool QV4l2::open_capture_device()
     cap.index=0;
     while (1)
     {
+        qDebug() <<"open_capture_device Function in while(1) running";
         ret = ioctl(preview_fd , PREV_ENUM_CAP, &cap);
         if (ret < 0)
         {
+            qDebug() <<"open_capture_device Function in while(1) break";
             break;
         }
         // find the defaults for this module
@@ -442,17 +450,17 @@ bool QV4l2::open_capture_device()
         {
             printf("cap.module_id == PREV_WB\n");
             bzero((void *)&wb, sizeof (struct prev_wb));
-            wb.gain_r.integer = 1;
-            wb.gain_r.decimal = 0;
+            wb.gain_r.integer  = 1;
+            wb.gain_r.decimal  = 0;
             wb.gain_gr.integer = 1;
-            wb.gain_gr.decimal = 0;
+            wb.gain_gr.decimal = 75;
             wb.gain_gb.integer = 1;
-            wb.gain_gb.decimal = 0;
-            wb.gain_b.integer = 1;
-            wb.gain_b.decimal = 0;
-            wb.ofst_r = 0;
+            wb.gain_gb.decimal = 75;
+            wb.gain_b.integer  = 1;
+            wb.gain_b.decimal  = 150;
+            wb.ofst_r  = 0;
             wb.ofst_gb = 0;
-            wb.ofst_b = 0;
+            wb.ofst_b  = 0;
             mod_param.len = sizeof(struct prev_wb);
             mod_param.param = &wb;
         }
@@ -460,8 +468,8 @@ bool QV4l2::open_capture_device()
         {
             printf("cap.module_id == PREV_LUM_ADJ\n");
             bzero((void *)&lum_adj, sizeof (struct prev_lum_adj));
-              lum_adj.brightness = 0;//////////////////////////////////////亮度
-              lum_adj.contrast = 20;///////////////////////////////////////对比度
+              lum_adj.brightness = 10;//////////////////////////////////////亮度
+              lum_adj.contrast = 10;///////////////////////////////////////对比度
             mod_param.len = sizeof (struct prev_lum_adj);
             mod_param.param = &lum_adj;
         }
@@ -485,9 +493,9 @@ bool QV4l2::open_capture_device()
             yee.en = 1;
             //yee.en_halo_red = 1;
             yee.en_halo_red = 0;
-            //yee.merge_meth = IPIPE_YEE_ABS_MAX;
-            yee.merge_meth = IPIPE_YEE_EE_ES;
-            yee.hpf_shft = 6; // 5, 10
+            yee.merge_meth = IPIPE_YEE_ABS_MAX;
+            //yee.merge_meth = IPIPE_YEE_EE_ES;
+            yee.hpf_shft = 10; // 5, 10
             //yee.hpf_coef_00 =  8;
             //yee.hpf_coef_01 =  2;
             //yee.hpf_coef_02 = -2;
@@ -524,7 +532,7 @@ bool QV4l2::open_capture_device()
         else
         {
             printf("Setting default for %s\n", cap.module_name);
-            mod_param.param = NULL;
+            mod_param.param = NULL;//如果参数不是那些参数，则清空去写
         }
 
         if (ioctl(preview_fd, PREV_S_PARAM, &mod_param) < 0)
@@ -535,6 +543,7 @@ bool QV4l2::open_capture_device()
         }
 
         cap.index++;
+        qDebug()<< "while(1) cap.index++ :" << cap.index;
     }
 
     if(stat(dev_name_capture.toStdString().c_str(), &st) == -1)
@@ -559,7 +568,6 @@ bool QV4l2::open_capture_device()
     }
 
     // 如果非阻塞模式打开, 即使尚未捕获到信息, 驱动依然会把缓冲区(DQBUFF)里的东西返回给应用程序
-    // 打开设备
     capture_fd = open(dev_name_capture.toStdString().c_str(), O_RDWR | O_NONBLOCK);
     if(capture_fd == -1)
     {
@@ -641,12 +649,12 @@ bool QV4l2::init_capture_device()
         printf("\n");
     }
 
-    // 设置视频格式
+    //设置视频格式
     struct v4l2_format v4l2Fmt;
     memset(&v4l2Fmt, 0, sizeof(v4l2Fmt));
     v4l2Fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     struct v4l2_pix_format *pFmt = &v4l2Fmt.fmt.pix;
-//    pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
+    //pFmt->pixelformat = V4L2_PIX_FMT_UYVY;
     pFmt->pixelformat = V4L2_PIX_FMT_NV12;
     pFmt->width  = 384;
     pFmt->height = 384;
@@ -809,28 +817,26 @@ bool QV4l2::init_capture_mmap()
     return true;
 }
 
-bool QV4l2::open_display_device()
-{
-    vid0_fd = open(dev_name_vid0.toStdString().c_str(), O_RDWR);
 
-    if (-1 == vid0_fd)
+bool QV4l2::open_display_device()//打开显示设备
+{
+    vid0_fd = open(dev_name_vid0.toStdString().c_str(), O_RDWR);//打开Vid0设备
+    if (-1 == vid0_fd)//打开失败
     {
-        printf("fail: open VID0 display device\n");
+        printf("fail: open Vid0 display device\n");
         return false;
     }
-    else
+    else//打开成功
     {
-        printf("seccess: open VID0 display device\n");
+        printf("seccess: open Vid0 display device\n");
     }
-
     return true;
 }
 
 bool QV4l2::init_display_device()//初始化显示设备
 {
-    int ret = 0;
-    v4l2_capability capability;//查询能力
-
+    int  ret = 0;
+    v4l2_capability    capability;//查询能力
     ret = ioctl(vid0_fd, VIDIOC_QUERYCAP, &capability);
     if (ret < 0)
     {
@@ -848,10 +854,8 @@ bool QV4l2::init_display_device()//初始化显示设备
         {
             printf("\tStreaming is supported\n");
         }
-    }
-
-    // set display format 设置显示形式
-    v4l2_format setfmt;
+    }  
+    v4l2_format setfmt;// set display format 设置显示形式
     CLEAR(setfmt);
     setfmt.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
     //setfmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY;
@@ -880,11 +884,6 @@ bool QV4l2::init_display_device()//初始化显示设备
     crop.c.width  =  384;//高度
     crop.c.top    =  48; //视频显示位置//////  （640-384）/2=128  就到中间了//////左边距
     crop.c.left   =  48; //视频显示位置//////  （480-384）/2=48   就到中间了//////上边距
-
-    //crop.c.height =  384;
-    //crop.c.width  =  384;
-    //crop.c.top    =  48; //视频显示位置//////  （640-384）/2=128  就到中间了//////////////////
-    //crop.c.left   =  48; //视频显示位置//////  （480-384）/2=48   就到中间了//////////////////
 
     ret = ioctl(vid0_fd, VIDIOC_S_CROP, &crop);
     if (ret < 0)
@@ -918,7 +917,7 @@ bool QV4l2::init_display_device()//初始化显示设备
     return true;
 }
 
-bool QV4l2::init_display_mmap()//共享内存
+bool QV4l2::init_display_mmap()//申请显示共享内存
 {
     int ret = 0;
 
@@ -1009,8 +1008,22 @@ bool QV4l2::init_display_mmap()//共享内存
     {
         printf("success: display stream on\n");
     }
-
     return true;
+}
+
+bool QV4l2::display_ummap()//释放显示共享内存
+{
+    v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+    ioctl(vid0_fd, VIDIOC_STREAMOFF, &type);//关闭视频流
+    for(unsigned int ji = 0; ji < VidReqBufs.count; ji++)//清空申请的内存
+    {
+        if (-1 == munmap (vid0Buf[ji].start, vid0Buf[ji].length))
+        {
+            printf ("munmap error");
+        }
+    }
+    close(vid0_fd);//关闭设备句柄
 }
 
 bool QV4l2::open_osd0_device()
@@ -1025,7 +1038,6 @@ bool QV4l2::open_osd0_device()
     {
         printf("seccess: open osd0 device\n");
     }
-
     return true;
 }
 
@@ -1313,7 +1325,7 @@ bool QV4l2::trans_osd1()
 {
     char *osd1buff = NULL;
     int memsize;
-    printf("QV4l2::blank_osd1()");
+    printf("QV4l2::trans_osd1()");
 
     memsize = ((osd1_fixInfo.line_length*osd1_varInfo.yres));
     osd1buff = (char *) mmap(NULL,memsize,PROT_READ|PROT_WRITE,MAP_SHARED,osd1_fd,0);
@@ -1349,9 +1361,19 @@ int QV4l2::video0_capture()//拍照函数
 
     CERuntime_init();
     Dmai_init();
-    QString PictureOutFile=QString(m_StrNewFolderPath + m_PictureNoToString + ".jpg");//照片存放路径
-    qDebug()<< "New Picture Out File name is" << PictureOutFile;
-    outFile = fopen(PictureOutFile.toStdString().c_str(),"wb");
+
+    if(m_WhiteBalance_f==1)
+    {
+        QString PictureOutFile= "Balance/Capture.jpg";//照片存放路径
+        qDebug()<< "Balance Capture done,path is" << PictureOutFile;
+        outFile = fopen(PictureOutFile.toStdString().c_str(),"wb");
+    }
+    else
+    {
+        QString PictureOutFile=QString(m_StrNewFolderPath + m_PictureNoToString + ".jpg");//照片存放路径
+        qDebug()<< "New Picture Out File name is" << PictureOutFile;
+        outFile = fopen(PictureOutFile.toStdString().c_str(),"wb");
+    }
 
     if(outFile == NULL)
     {
@@ -1498,29 +1520,31 @@ int QV4l2::video0_capture()//拍照函数
 
     qDebug()<<"Capture done!"<<endl;//拍照成功
 
-    /////////////////////////////////////////////////////////////////////照片或者视频编号++王文广////////////
-    m_PictureNo=m_PictureNo+1;
-    m_PictureNoToString= QString::number(m_PictureNo, 10); //数字转字符串
-    if(m_PictureNo<10)
+    if(m_WhiteBalance_f==0)
     {
-        m_PictureNoToString="000"+m_PictureNoToString;
-    }
-    else if(m_PictureNo<100)
-    {
-        m_PictureNoToString="00"+m_PictureNoToString;
-    }
-    else if(m_PictureNo<1000)
-    {
-        m_PictureNoToString="0"+m_PictureNoToString;
-    }
-    else if(m_PictureNo>9999)//超出范围
-    {
-        m_PictureNo=0;
-    }
+        /////////////////////////////////////////////////////////////////////照片或者视频编号++王文广////////////
+        m_PictureNo=m_PictureNo+1;
+        m_PictureNoToString= QString::number(m_PictureNo, 10); //数字转字符串
+        if(m_PictureNo<10)
+        {
+            m_PictureNoToString="000"+m_PictureNoToString;
+        }
+        else if(m_PictureNo<100)
+        {
+            m_PictureNoToString="00"+m_PictureNoToString;
+        }
+        else if(m_PictureNo<1000)
+        {
+            m_PictureNoToString="0"+m_PictureNoToString;
+        }
+        else if(m_PictureNo>9999)//超出范围
+        {
+            m_PictureNo=0;
+        }
 
-    m_PictureNoToString=m_PowerOnTimeStr+m_PictureNoToString;
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        m_PictureNoToString=m_PowerOnTimeStr+m_PictureNoToString;
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
     return 0;
 }
 
@@ -1550,6 +1574,10 @@ int QV4l2::rcdstar()//录像
     hMP4File = CreateMP4File(MP4OutFile.toStdString().c_str(),384,384,9000,30);
 
     //hMP4File = CreateMP4File("/media/mmcblk0p1/DCIM/output2.mp4",384,384,9000,30);
+
+
+    //./my_mp4dec  /media/mmcblk0p1/DCIM/11250117/07040001.mp4
+
 
     if (hMP4File == MP4_INVALID_FILE_HANDLE)
     {
@@ -1742,69 +1770,93 @@ int QV4l2::rcdstop()
     printf("End of video encoding.\n");
 }
 
+void QV4l2::msecSleep(int msec)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
+    while( QTime::currentTime() <dieTime )
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+    }
+}
+
 bool QV4l2::start_loop()
 {
-    //v4l2_buffer buf;
     char *displaybuffer = NULL;
-    char *src = NULL;
-    char *dest = NULL;
-    //char *dst = NULL;
-    int i;
-    int ret;
-
+    char *src           = NULL;
+    char *dest          = NULL;
+    int  i,ret;
     while(1)
     {
-        CLEAR(cap_buf);
-        cap_buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        cap_buf.memory = V4L2_MEMORY_MMAP;
+            if(m_BreakLoop_f==1)
+            {
+                m_BreakLoop_f=0;
+                printf("BreakLoop..................\n");
+                break;
+            }
+            if(m_Freezed_f==true)
+            {
+                display_ummap();
+                while(1)
+                {
+                    if(m_Freezed_f==false)
+                    {
+                        open_display_device();
+                        init_display_device();
+                        init_display_mmap();
+                        break;
+                    }
+                    this->msecSleep(200);
+                }
+            }
 
-        // determine ready buffer
-        if (-1 == ioctl(capture_fd, VIDIOC_DQBUF, &cap_buf))
-        {
-            if (EAGAIN == errno)
-                continue;
-            printf("StartCameraCaputre:ioctl:VIDIOC_DQBUF\n");
-            return false;
-        }
+            CLEAR(cap_buf);
+            cap_buf.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+            cap_buf.memory = V4L2_MEMORY_MMAP;
 
-        displaybuffer = (char*)get_display_buffer(vid0_fd);
-        if (NULL == displaybuffer)
-        {
-            printf("Error in getting the  display buffer:VID1\n");
-            return false;
-        }
+            // determine ready buffer
+            if (-1 == ioctl(capture_fd, VIDIOC_DQBUF, &cap_buf))
+            {
+                if (EAGAIN == errno)
+                    continue;
+                printf("Start Camera Caputre:ioctl:VIDIOC_DQBUF\n");
+                return false;
+            }
 
-        src = (char *)capture_buffers[cap_buf.index].start;
-        //src_ptr = (char *)capture_buffers[buf.index].start;
-        //dst = (char *)calloc(294912, sizeof(char));
-        //printf("Opps!\n");
-        //printf("displaybuffer=%p\n",displaybuffer);
-        dest = displaybuffer;
+            displaybuffer = (char*)get_display_buffer(vid0_fd);
+            if (NULL == displaybuffer)
+            {
+                printf("Error in getting the  display buffer:VID1\n");
+                return false;
+            }
 
-        for(i=0 ; i < 576; i++)
-        {
-            memcpy(dest, src, 384);
-            src  += 384;
-            dest += 384;
-        }
+            src  = (char *)capture_buffers[cap_buf.index].start;
+            //src_ptr = (char *)capture_buffers[buf.index].start;
+            //dst = (char *)calloc(294912, sizeof(char));
+            //printf("Opps!\n");
+            //printf("displaybuffer=%p\n",displaybuffer);
+            dest = displaybuffer;
 
-        //free(dst);
-        //printf("displaybuffer=%p\n",displaybuffer);
-        ret = put_display_buffer(vid0_fd, displaybuffer);
-        //printf("Opps!!!\n");
-        //display_bitmap_osd1();
+            for(i=0 ; i < 576; i++)
+            {
+                memcpy(dest, src, 384);
+                src  += 384;
+                dest += 384;
+            }
 
-        if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &cap_buf))
-        {
-            printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
-        }
+            //free(dst);
+            //printf("displaybuffer=%p\n",displaybuffer);
+            ret = put_display_buffer(vid0_fd, displaybuffer);
 
-        if(video_recording ==true)
-        {
-            encloop((void *)capture_buffers[cap_buf.index].start);
-        }
+            if (-1 == ioctl(capture_fd, VIDIOC_QBUF, &cap_buf))
+            {
+                printf("StartCameraCaputre:ioctl:VIDIOC_QBUF\n");
+            }
 
-        //printf("Opps!!\n");
+            if(video_recording ==true)
+            {
+                encloop((void *)capture_buffers[cap_buf.index].start);
+            }
+
     }
     ret = stop_capture(capture_fd);
     if (ret < 0)
@@ -1955,11 +2007,17 @@ int QV4l2::put_display_buffer(int vid_win, void *addr)
 
 int QV4l2::stop_capture(int vid_win)
 {
-        int ret;
+        int  ret;
         enum v4l2_buf_type type;
         type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         ret = ioctl(vid_win, VIDIOC_STREAMOFF, &type);
         return ret;
+}
+
+bool QV4l2::close_fd123()
+{
+    close(vid0_fd);
+    qDebug() << "close(vid0_fd);............." ;
 }
 
 
@@ -1978,22 +2036,78 @@ void QV4l2Thread::SlotSendNewFolderPath(QString StrNewFolderPath)
     pV4l2->m_StrNewFolderPath=StrNewFolderPath;
 }
 
-void QV4l2Thread::run()
+void QV4l2Thread::SlotFreeze()
 {
-    std::cout << "thread 2 running" << std::endl;
-    pV4l2 = new QV4l2();
+    //pV4l2->m_BreakLoop_f=1;
+    //pV4l2->display_ummap();
+    pV4l2->m_Freezed_f=true;
+    qDebug() << "Function SlotFreeze(); working" ;
+}
+
+void QV4l2Thread::SlotReFreeze()
+{
+    pV4l2->m_Freezed_f=false;
+    //pV4l2->close_fd123();
+    //pV4l2->blank_osd1();
+    //init_display();
+    //start_loop();
+    qDebug() << "Function SlotReFreeze(); working" ;
+}
+
+void QV4l2Thread::SlotWhiteBalance()
+{
+    pV4l2->m_WhiteBalance_f=1;
+    video0_capture();
+    pV4l2->m_WhiteBalance_f=0;
+}
+
+void QV4l2Thread::SlotRunAgain()
+{
+    init_display();
+    start_loop();
+}
+
+void QV4l2Thread::init_capture()
+{
     pV4l2->open_capture_device();
     pV4l2->init_capture_device();
     pV4l2->init_capture_mmap();
+}
+
+void QV4l2Thread::init_osd()
+{
     pV4l2->open_osd0_device();
     pV4l2->init_osd0_device();
     pV4l2->open_osd1_device();
     pV4l2->init_osd1_device();
     pV4l2->init_osd1_mmap();
+    qDebug() << "QV4l2Thread::init_osd()。。。。。。" ;
+}
+
+void QV4l2Thread::init_display()
+{
     pV4l2->open_display_device();
     pV4l2->init_display_device();
     pV4l2->init_display_mmap();
+}
+
+void QV4l2Thread::start_loop()
+{
     pV4l2->start_loop();
+}
+
+void QV4l2Thread::run()
+{
+    std::cout << "QV4l2Thread running" << std::endl;   
+    pV4l2 = new QV4l2();
+    pV4l2->m_WhiteBalance_f=0;
+    pV4l2->m_Freezed_f=false;
+    pV4l2->m_BreakLoop_f=0;
+
+    init_capture();
+    init_osd();
+    init_display();
+    start_loop();
 }
 
 void QV4l2Thread::blank_osd1()

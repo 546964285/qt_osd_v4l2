@@ -23,7 +23,6 @@ DlgLanguage::DlgLanguage(QWidget *parent) :QDialog(parent),ui(new Ui::DlgLanguag
     ui->LabelText2->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
     ui->LabelText3->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
     ui->LabelText4->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);//设置label控件 水平居中，上下居中
-
 }
 
 DlgLanguage::~DlgLanguage()

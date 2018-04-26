@@ -33,6 +33,8 @@ class QV4l2
 public:
     QV4l2();
     ~QV4l2();
+
+    void msecSleep(int msec);
     
     bool get_osd_nod();
     bool open_capture_device();
@@ -66,6 +68,12 @@ public:
     int PowerOn_flag;
 
     QString m_StrNewFolderPath;
+    bool m_Freezed_f;
+    int  m_WhiteBalance_f;
+    int m_BreakLoop_f;
+
+    bool close_fd123();
+    bool display_ummap();//
 
 
 private: 
@@ -133,6 +141,11 @@ public:
     bool capture_lock;
     bool video_recording;
 
+    void init_capture();
+    void init_osd();
+    void init_display();
+    void start_loop();
+
 protected:
     void run();
 
@@ -145,6 +158,12 @@ public slots:
     void    video0_capture();
     void    rcdstarstop();
     void    SlotSendNewFolderPath(QString StrNewFolderPath);
+
+    void    SlotFreeze();
+    void    SlotReFreeze();
+    void    SlotWhiteBalance();
+
+    void    SlotRunAgain();
 
 Q_SIGNALS:
     void    capture_ok();

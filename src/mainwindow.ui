@@ -14,22 +14,6 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QGxImage" name="label222">
-    <property name="geometry">
-     <rect>
-      <x>520</x>
-      <y>450</y>
-      <width>16</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::NoFrame</enum>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
    <widget class="QBattery" name="battery" native="true">
     <property name="geometry">
      <rect>
@@ -97,11 +81,6 @@
    <extends>QWidget</extends>
    <header location="global">qbattery.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QGxImage</class>
-   <extends>QLabel</extends>
-   <header location="global">qgximage.h</header>
   </customwidget>
  </customwidgets>
  <resources>

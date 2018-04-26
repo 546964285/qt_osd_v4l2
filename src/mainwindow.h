@@ -49,11 +49,19 @@ private:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
+    void OpenI2CDevice();
     void GetI2CValue();
+    bool RgbAlgorithm();//算法
+    void ClearRGBGain();
+
+    void OpenFifo();
+    void SendMessageFifo(char *bewrite);
+    int  ReciveMessageFifo();
 
     QDateTime current_time;
     QString current_time_str;
     QTimer* updateRTC_timer;
+    QTimer* SystemScanTimer;
     QLabel * logoLabel;
     Button * capt_btn;
     Button * record_btn;
@@ -70,12 +78,16 @@ private:
     int m_Charge;
     int m_OnOff;
 
+    int  I2Cfd;
+    bool m_Freezed_f;
+
 public slots:
     void call_testdialog();
     void rcdstarstop();
     void capture_ok();
     void capture_fail();
     void capture();
+    void SlotSystemScan();
     void SlotShowMainWindow();
     void SlotSendNewFolderPath(QString StrNewFolderPath);
 
@@ -91,6 +103,11 @@ Q_SIGNALS:
     void    SSendNewFolderPath(QString StrNewFolderPath);
     void    SFreshDlgf1Window();
     void    SKeyPressed();
+
+    void    SFreeze();
+    void    SReFreeze();
+    void    SWhiteBalance();
+    void    SRunAgain();
 };
 
 
