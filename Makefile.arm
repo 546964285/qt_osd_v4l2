@@ -23,6 +23,10 @@ CROSS_COMPILE           =  /opt/codesourcery/arm-2009q1/bin/arm-none-linux-gnuea
 CODEC_INSTALL_DIR       =  ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/codecs-dm365_4_02_00_00
 XDC_INSTALL_DIR         =  ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/xdctools_3_16_03_36
 LINUXLIBS_INSTALL_DIR   =  ${HOME}/ti-dvsdk_dm368-evm_4_02_00_06/linux-devkit/arm-none-linux-gnueabi/usr
+CMEMLIB=cmem.a470uC
+KERNEL_DIR              =   /home/andy/RidgeRun-SDK-DM36x-Turrialba-Eval/kernel/src
+INSTALL_DIR1            =   /home/andy/targetfs/rr_rootfs
+INSTALL_DIR2            =   /home/andy/targetfs/ti_root/home/root
 
 XDCPATH = $(DMAI_INSTALL_DIR)/packages;$(CE_INSTALL_DIR)/packages;$(FC_INSTALL_DIR)/packages;$(XDAIS_INSTALL_DIR)/packages;$(CMEM_INSTALL_DIR)/packages;$(CODEC_INSTALL_DIR)/packages
 XDC_CFG       =  my_jpgenc_config
@@ -42,7 +46,7 @@ export QMAKESPEC=/usr/local/Trolltech/QtEmbedded-4.7.0-arm/mkspecs/qws/linux-arm
 
 CONFIGURO   = $(PRE) $(XDC_INSTALL_DIR)/xs xdc.tools.configuro -t $(PLATFORM_XDC_TARGET) -p $(PLATFORM_XDC) -b $(CONFIG_BLD)
 
-CC            = arm-none-linux-gnueabi-gcc
+CC            = arm-none-linux-gnueabi-gcc -I$(KERNEL_DIR)/include
 CXX           = arm-none-linux-gnueabi-g++
 DEFINES       = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT $(DEFINES)

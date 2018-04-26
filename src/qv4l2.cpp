@@ -52,6 +52,8 @@
 #include "qv4l2.h"
 #include <QDebug>
 
+#include "cmem.h"
+
 extern "C"
 {
     #include "jpegenc.h"
@@ -87,6 +89,12 @@ Bool                   mustExit  = FALSE;
 Int                    bufIdx;
 Int                    flushCntr = 1;
 MP4FileHandle          hMP4File;
+
+
+static struct 	rsz_single_shot_config 	rsz_ss_config;
+static struct 	prev_single_shot_config prev_ss_config;
+
+
 
 Int dmacopydata(void * addr, Buffer_Handle hDstBuf)
 {
@@ -300,7 +308,9 @@ bool QV4l2::open_capture_device()
 {
     struct stat st;
 
-    oper_mode_1 = IMP_MODE_CONTINUOUS;
+    //oper_mode_1 = IMP_MODE_CONTINUOUS;
+    oper_mode_1 = IMP_MODE_SINGLE_SHOT;
+
     resizer_fd  = open(dev_name_rsz.toStdString().c_str(), O_RDWR);
     if(-1 == resizer_fd)//第一次打开失败
     {
@@ -328,9 +338,20 @@ bool QV4l2::open_capture_device()
     if (oper_mode_1 == user_mode_1)
     {
         printf("RESIZER: Operating mode changed successfully to Continuous");//调整器改变成功
+        if (oper_mode_1 == IMP_MODE_SINGLE_SHOT)
+                printf(" %s", "Single Shot\n");
+        else
+                printf(" %s", "Continuous\n");
+    }
+    else
+    {
+        //printf("RESIZER: Couldn't change operation mode to single shot mode");
+        close(resizer_fd);
     }
 
-    rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    //rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    rsz_chan_config.oper_mode = IMP_MODE_SINGLE_SHOT;
+
     rsz_chan_config.chain = 1;
     rsz_chan_config.len = 0;
     rsz_chan_config.config = NULL; // to set defaults in driver
@@ -342,16 +363,41 @@ bool QV4l2::open_capture_device()
     }
 
     CLEAR (rsz_ctn_config);
-    rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    //rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    rsz_chan_config.oper_mode = IMP_MODE_SINGLE_SHOT;
+
     rsz_chan_config.chain = 1;
-    rsz_chan_config.len = sizeof(struct rsz_continuous_config);
-    rsz_chan_config.config = &rsz_ctn_config;
+    //rsz_chan_config.len = sizeof(struct rsz_continuous_config);
+    rsz_chan_config.len = sizeof(struct rsz_single_shot_config);
+
+    //rsz_chan_config.config = &rsz_ctn_config;
+    rsz_chan_config.config = &rsz_ss_config;
+
     if (-1 == ioctl(resizer_fd, RSZ_G_CONFIG, &rsz_chan_config))
     {
         printf("getting default configuration for continuous mode failed\n");
         return -1;
     }
 
+    rsz_ss_config.output1.pix_fmt = IPIPE_UYVY;
+    rsz_ss_config.output1.enable  = 1;
+    rsz_ss_config.output1.width   = 480;
+    rsz_ss_config.output1.height  = 480;
+    rsz_ss_config.output2.enable  = 0;
+    rsz_chan_config.oper_mode     = IMP_MODE_SINGLE_SHOT;
+    rsz_chan_config.chain = 1;
+    rsz_chan_config.len = sizeof(struct rsz_single_shot_config);
+    if (ioctl(resizer_fd, RSZ_S_CONFIG, &rsz_chan_config) < 0)
+    {
+        perror("Error in setting default configuration for single shot mode\n");
+        close(resizer_fd);
+    }
+    else
+    {
+        printf("Resizer initialized\n");
+    }
+
+#if 0
     rsz_ctn_config.output1.enable = 1;
     rsz_ctn_config.output2.enable = 0;
     rsz_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
@@ -363,9 +409,11 @@ bool QV4l2::open_capture_device()
         printf("setting default configuration for continuous mode failed\n");
         return -1;
     }
+#endif
 
+    //oper_mode_1 = IMP_MODE_CONTINUOUS; // same as resizer
+    oper_mode_1 = IMP_MODE_SINGLE_SHOT;
 
-    oper_mode_1 = IMP_MODE_CONTINUOUS; // same as resizer
     preview_fd = open(dev_name_prev.toStdString().c_str(), O_RDWR);
     if(-1 == preview_fd)
     {
@@ -389,9 +437,20 @@ bool QV4l2::open_capture_device()
     if (oper_mode_1 == user_mode_1)
     {
         printf("Operating mode changed successfully to continuous in previewer\n");
+        if (oper_mode_1 == IMP_MODE_SINGLE_SHOT)
+                printf(" %s", "Single Shot\n");
+        else
+                printf(" %s", "Continuous\n");
+    }
+    else
+    {
+        //printf("PREVIEW: Couldn't change operation mode to single shot mode");
+        close(preview_fd);
     }
 
-    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    //prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    prev_chan_config.oper_mode = IMP_MODE_SINGLE_SHOT;
+
     prev_chan_config.len = 0;
     prev_chan_config.config = NULL; // to set defaults in driver
     if(-1 == ioctl(preview_fd, PREV_S_CONFIG, &prev_chan_config))
@@ -400,19 +459,59 @@ bool QV4l2::open_capture_device()
         return -1;
     }
 
-    CLEAR (prev_ctn_config);
-    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
-    prev_chan_config.len = sizeof(struct prev_continuous_config);
-    prev_chan_config.config = &prev_ctn_config;
+    CLEAR (prev_ss_config);
+    prev_chan_config.oper_mode = IMP_MODE_SINGLE_SHOT;
+    prev_chan_config.len = sizeof(struct prev_single_shot_config);
+    prev_chan_config.config = &prev_ss_config;
+
+    //CLEAR (prev_ctn_config);
+    //prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    //prev_chan_config.len = sizeof(struct prev_continuous_config);
+    //prev_chan_config.config = &prev_ctn_config;
     if(-1 == ioctl(preview_fd, PREV_G_CONFIG, &prev_chan_config))
     {
         printf("Error in getting configuration from driver\n");
         return -1;
     }
 
-    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
-    prev_chan_config.len = sizeof(struct prev_continuous_config);
-    prev_chan_config.config = &prev_ctn_config;
+
+    //	    prev_chan_config.oper_mode = IMP_MODE_CONTINUOUS;
+    //	    prev_chan_config.len = sizeof(struct prev_continuous_config);
+    //	    prev_chan_config.config = &prev_ctn_config;
+        prev_chan_config.oper_mode = IMP_MODE_SINGLE_SHOT;
+            prev_chan_config.len = sizeof(struct prev_single_shot_config);
+            prev_chan_config.config = &prev_ss_config;
+        prev_ss_config.input.image_width = 384;
+            prev_ss_config.input.image_height = 384;
+            //prev_ss_config.input.ppln= 384 * 1.5;
+        prev_ss_config.input.ppln= 384 + 8;
+            prev_ss_config.input.lpfr = 384 + 10;
+    //	    prev_ss_config.input.pix_fmt = IPIPE_BAYER;
+    //	    prev_ss_config.input.data_shift = IPIPEIF_5_1_BITS11_0;
+        //prev_ss_config.input.pix_fmt = IPIPE_UYVY;
+        //prev_ss_config.input.pix_fmt = IPIPE_BAYER_12BIT_PACK;
+        //prev_ss_config.input.pix_fmt = IPIPE_BAYER_8BIT_PACK_ALAW;
+        prev_ss_config.input.pix_fmt = IPIPE_BAYER_8BIT_PACK;
+
+    //	    prev_ss_config.input.colp_elep= IPIPE_BLUE;
+    //	    prev_ss_config.input.colp_elop= IPIPE_GREEN_BLUE;
+    //	    prev_ss_config.input.colp_olep= IPIPE_GREEN_RED;
+    //	    prev_ss_config.input.colp_olop= IPIPE_RED;
+    //
+    //	    prev_ctn_config.input.colp_elep= IPIPE_GREEN_BLUE;
+    //	    prev_ctn_config.input.colp_elop= IPIPE_BLUE;
+    //	    prev_ctn_config.input.colp_olep= IPIPE_RED;
+    //	    prev_ctn_config.input.colp_olop= IPIPE_GREEN_RED;
+
+        prev_ss_config.input.colp_elep= IPIPE_GREEN_RED;
+        prev_ss_config.input.colp_elop= IPIPE_RED;
+        prev_ss_config.input.colp_olep= IPIPE_BLUE;
+        prev_ss_config.input.colp_olop= IPIPE_GREEN_BLUE;
+
+    //	    prev_ss_config.input.colp_elep= IPIPE_RED;
+    //	    prev_ss_config.input.colp_elop= IPIPE_GREEN_RED;
+    //	    prev_ss_config.input.colp_olep= IPIPE_GREEN_BLUE;
+    //	    prev_ss_config.input.colp_olop= IPIPE_BLUE;
     prev_ctn_config.input.colp_elep= IPIPE_BLUE;
     prev_ctn_config.input.colp_elop= IPIPE_GREEN_BLUE;
     prev_ctn_config.input.colp_olep= IPIPE_GREEN_RED;
@@ -493,9 +592,9 @@ bool QV4l2::open_capture_device()
             yee.en = 1;
             //yee.en_halo_red = 1;
             yee.en_halo_red = 0;
-            yee.merge_meth = IPIPE_YEE_ABS_MAX;
-            //yee.merge_meth = IPIPE_YEE_EE_ES;
-            yee.hpf_shft = 10; // 5, 10
+            //yee.merge_meth = IPIPE_YEE_ABS_MAX;
+            yee.merge_meth = IPIPE_YEE_EE_ES;
+            yee.hpf_shft = 6; // 5, 10
             //yee.hpf_coef_00 =  8;
             //yee.hpf_coef_01 =  2;
             //yee.hpf_coef_02 = -2;
